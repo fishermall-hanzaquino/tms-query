@@ -5,7 +5,11 @@ SELECT
     preconcde AS preconstruction_code,
     precondesc AS description,
     '10' AS status,
-    '1' AS mall_id
+    '1' AS mall_id,
+    0 AS created_by,
+    0 AS updated_by,
+    '1990-01-01 12:00:00' AS created_at,
+    '1990-01-01 12:00:00' AS updated_at
 FROM preconstructionfile AS t_m_s_preconstruction_requirements;
 
 SELECT 
@@ -13,7 +17,11 @@ SELECT
     partcde AS preoperational_code,
     partdesc AS description,
     '10' AS status,
-    '1' AS mall_id
+    '1' AS mall_id,
+    0 AS created_by,
+    0 AS updated_by,
+    '1990-01-01 12:00:00' AS created_at,
+    '1990-01-01 12:00:00' AS updated_at
 FROM particularsfile as t_m_s_preoperational_requirements;
 
 SELECT
@@ -21,7 +29,11 @@ SELECT
     provicde AS provision_code,
     providesc AS description,
     '10' AS status,
-    '1' AS mall_id
+    '1' AS mall_id,
+    0 AS created_by,
+    0 AS updated_by,
+    '1990-01-01 12:00:00' AS created_at,
+    '1990-01-01 12:00:00' AS updated_at
 FROM provisionsfile AS t_m_s_provisions;
 
 //main module
@@ -30,7 +42,7 @@ FROM provisionsfile AS t_m_s_provisions;
 
 //problem - multiple turnoverfile
 SELECT
-    t_m_s_tenant_profiles.id + 896,
+    t_m_s_tenant_profiles.id + 940,
     t_m_s_tenant_profiles.termsofleasecde AS awardnotice_no,
     t_m_s_tenant_profiles.turnoverdte AS turnover_date,
     t_m_s_tenant_profiles.modeofpayment AS payment_type,
@@ -38,7 +50,9 @@ SELECT
     tof.turnoverremarks AS remarks,
     tof.inspected AS inspected_by,
     tof.noted AS noted_by,
-    tof.recieved AS conformed_by
+    tof.recieved AS conformed_by,
+    '1990-01-01 12:00:00' AS created_at,
+    '1990-01-01 12:00:00' AS updated_at
 FROM ingressfile AS t_m_s_tenant_profiles
 JOIN turnoverfile AS tof 
     ON t_m_s_tenant_profiles.ingresscde = tof.referencecde

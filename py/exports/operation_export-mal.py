@@ -8,7 +8,7 @@ conn = pymysql.connect(
     host='localhost',
     user='root',
     password='',
-    database='db_tms_mal',  # Replace with your actual DB name
+    database='db_tms_mlb',  # Replace with your actual DB name
 )
 cursor = conn.cursor()
 

@@ -1,30 +1,37 @@
 //system setup
 
 SELECT 
-    id + 661,
+    id + 689,
     clientacctcde AS clientid,
     '1' AS mallid,
     tenantacctnme AS corporatename,
     bussnature AS clientname,
     tenantacctaddr AS clientaddress,
     tenantacctcno AS clientcontactno,
-    tenantaccttin AS clienttin
+    tenantaccttin AS clienttin,
+    'Data Migrated' AS remarks,
+    0 AS created_by,
+    0 AS updated_by,
+    '11028-01-01 12:00:00' AS created_at,
+    '11028-01-01 12:00:00' AS updated_at
 FROM tenantaccountfile AS t_m_s_clients;
 
 SELECT
-    id + 57,
+    id + 59,
+    NULL AS hashid,
     busscategorycde AS tmsBusinessCategoryID,
     busscategorydsc AS description,
+    2 AS mallid,
     CASE
         WHEN deleted = 0 THEN 10
         WHEN deleted = 1 THEN 20
     END AS `status`,
-    1 AS mallid,
-    NULL AS hashid
+    '11028-01-01 12:00:00' AS created_at,
+    '11028-01-01 12:00:00' AS updated_at
 FROM businesscategoryfile AS t_m_s_business_categories;
 
 SELECT 
-    id + 656,
+    id + 674,
     loccde AS locationcode,
     flrlvl AS mallfloorlevelid,
     flrareain as interiorarea,
@@ -39,18 +46,21 @@ SELECT
     CASE
         WHEN deleted = 0 THEN 10
         WHEN deleted = 1 THEN 20
-    END AS `status`
+    END AS `status`,
+    1 AS location_type_id,
+    '1990-01-01 12:00:00' AS created_at,
+    '1990-01-01 12:00:00' AS updated_at
 FROM locationfile AS locations;
 
 //main module
 
 SELECT 
-    t_m_s_award_notices.id + 990,
-    t_m_s_award_notices.id + 990 AS counter,
+    t_m_s_award_notices.id + 1046,
+    t_m_s_award_notices.id + 1046 AS counter,
     t_m_s_award_notices.termsofleasecde AS anno,
     '1' AS mallid,
     NULL AS hashid,
-    lof.id + 656 AS locationid,
+    lof.id + 674 AS locationid,
     t_m_s_award_notices.storenme AS establishmentname,
     t_m_s_award_notices.tenanttype AS tenanttypeid,
     t_m_s_award_notices.clientnme AS tradename,
@@ -68,18 +78,21 @@ SELECT
     END AS `state`,
     t_m_s_award_notices.terminatedte AS terminatedat,
     t_m_s_award_notices.preparedby AS createdby,
-    taf.id + 661 AS clientid
+    t_m_s_award_notices.preparedby AS updatedby,
+    taf.id + 689 AS clientid,
+    '1990-01-01 12:00:00' AS created_at,
+    '1990-01-01 12:00:00' AS updated_at
 FROM clientofferfile AS t_m_s_award_notices
 LEFT JOIN tenantaccountfile taf ON t_m_s_award_notices.clientnme = taf.tenantacctnme
 LEFT JOIN locationfile lof ON t_m_s_award_notices.loccde = lof.loccde
 GROUP BY t_m_s_award_notices.id;
 
 SELECT
-    id + 990
-    id + 990 AS contracts_tmsawardnoticeid,
+    id + 1046,
+    id + 1046 AS contracts_tmsawardnoticeid,
     '1' AS contracts_mallid,
     termsofleasecde AS contracts_anno,
-    id + 990 AS contracts_counter,
+    id + 1046 AS contracts_counter,
     NULL AS contracts_hashid,
     contractcde AS contracts_contractid,
     CASE
@@ -90,7 +103,9 @@ SELECT
     CASE
         WHEN contractposted = 0 THEN 10
         WHEN contractposted = 1 THEN 20
-    END AS `contracts_state`
+    END AS `contracts_state`,
+    '1990-01-01 12:00:00' AS created_at,
+    '1990-01-01 12:00:00' AS updated_at
 FROM clientofferfile AS t_m_s_contracts;
 
 SELECT
@@ -116,7 +131,10 @@ SELECT
         WHEN t_m_s_a_n_rental_charges.cancelled = 0 THEN 10
         ELSE 20
     END AS `status`,
-    '00-00-0000' AS createdby
+    '00-00-0000' AS createdby,
+    '0' AS updatedby,
+    '1990-01-01 12:00:00' AS created_at,
+    '1990-01-01 12:00:00' AS updated_at
 FROM rentalchargesfile AS t_m_s_a_n_rental_charges
 LEFT JOIN clientofferfile contract ON t_m_s_a_n_rental_charges.contractcde = contract.contractcde
 LEFT JOIN clientofferfile tol ON t_m_s_a_n_rental_charges.termsofleasecde = tol.termsofleasecde
