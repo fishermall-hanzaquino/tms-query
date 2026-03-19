@@ -40,8 +40,8 @@ SELECT
     totalflrarea AS totalarea,
     
     CASE
-        WHEN branchcde = 'QAV' THEN 1
-        WHEN branchcde = 'MLB' THEN 2
+        WHEN branchcde = 'QAV' THEN 2
+        WHEN branchcde = 'MLB' THEN 1
     END AS mallid,
     CASE
         WHEN deleted = 0 THEN 10
