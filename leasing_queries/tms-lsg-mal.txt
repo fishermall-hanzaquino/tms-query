@@ -1,7 +1,5 @@
-//system setup
-
 SELECT 
-    id + 689,
+    id + 690,
     clientacctcde AS clientid,
     '1' AS mallid,
     tenantacctnme AS corporatename,
@@ -21,7 +19,7 @@ SELECT
     NULL AS hashid,
     busscategorycde AS tmsBusinessCategoryID,
     busscategorydsc AS description,
-    2 AS mallid,
+    1 AS mallid,
     CASE
         WHEN deleted = 0 THEN 10
         WHEN deleted = 1 THEN 20
@@ -52,92 +50,256 @@ SELECT
     '1990-01-01 12:00:00' AS updated_at
 FROM locationfile AS locations;
 
-//main module
-
 SELECT 
-    t_m_s_award_notices.id + 1046,
-    t_m_s_award_notices.id + 1046 AS counter,
+    id + 17,
+    1 AS mallid,
+    '' AS hashid,
+    tenantcde AS tenanttypeid,
+    tenantdesc AS description,
+    doccde AS document,
+    CASE
+        WHEN deleted = 0 THEN 10
+        WHEN deleted = 1 THEN 20
+    END AS `status`,
+    '1990-01-01 12:00:00' AS created_at,
+    '1990-01-01 12:00:00' AS updated_at
+FROM tenanttypefile AS t_m_s_tenant_types;
+
+
+SELECT
+    t_m_s_award_notices.id + 1047,
+    t_m_s_award_notices.id + 1047 AS counter,
+    MD5(t_m_s_award_notices.id + 1047) AS hashid,
     t_m_s_award_notices.termsofleasecde AS anno,
-    '1' AS mallid,
-    NULL AS hashid,
-    lof.id + 674 AS locationid,
-    t_m_s_award_notices.storenme AS establishmentname,
-    t_m_s_award_notices.tenanttype AS tenanttypeid,
-    t_m_s_award_notices.clientnme AS tradename,
-    t_m_s_award_notices.busscategory AS categoryid,
-    t_m_s_award_notices.tin,
+    1 AS mallid,
+    t_m_s_award_notices.offerdte AS date,
+    (
+        SELECT
+            locationfile.id + 674
+        FROM
+            locationfile
+        WHERE
+            t_m_s_award_notices.loccde = locationfile.loccde
+        LIMIT
+            1
+    ) AS locationid,
+    COALESCE(
+        (
+            SELECT
+                amendparticularsfile.valueto
+            FROM
+                amendmentfile
+                LEFT JOIN amendparticularsfile ON amendmentfile.amendmentcde = amendparticularsfile.amendmentcde
+            WHERE
+                t_m_s_award_notices.termsofleasecde = amendmentfile.termsofleasecde
+                AND amendmentfile.posted = 1
+                AND amendparticularsfile.amendfield = 'Store Name'
+                AND amendmentfile.effectivedte < '2026-02-28'
+            ORDER BY
+                amendmentfile.effectivedte DESC
+            LIMIT
+                1
+        ), t_m_s_award_notices.storenme
+    ) AS establishmentname,
+    (
+        SELECT
+            tenantaccountfile.id + 690
+        FROM
+            tenantaccountfile
+        WHERE
+            tenantaccountfile.clientacctcde = t_m_s_award_notices.clientacctcde
+        LIMIT
+            1
+    ) AS clientid,
+    (
+        SELECT
+            tenanttypefile.id + 17
+        FROM
+            tenanttypefile
+        WHERE
+            tenanttypefile.tenantdesc = t_m_s_award_notices.tenanttype
+        LIMIT
+            1
+    ) AS tenanttypeid,
+    COALESCE(
+        (
+            SELECT
+                amendparticularsfile.valueto
+            FROM
+                amendmentfile
+                LEFT JOIN amendparticularsfile ON amendmentfile.amendmentcde = amendparticularsfile.amendmentcde
+            WHERE
+                t_m_s_award_notices.termsofleasecde = amendmentfile.termsofleasecde
+                AND amendmentfile.posted = 1
+                AND amendparticularsfile.amendfield = 'Corporate Name'
+                AND amendmentfile.effectivedte < '2026-02-28'
+            ORDER BY
+                amendmentfile.effectivedte DESC
+            LIMIT
+                1
+        ), t_m_s_award_notices.clientnme
+    ) AS tradename,
+    (
+        SELECT
+            businesscategoryfile.id + 59
+        FROM
+            businesscategoryfile
+        WHERE
+            REPLACE(
+                REPLACE(businesscategoryfile.busscategorydsc, '\r', ''),
+                '\n',
+                ''
+            ) = REPLACE(
+                REPLACE(t_m_s_award_notices.busscategory, '\r', ''),
+                '\n',
+                ''
+            )
+        LIMIT
+            1
+    ) AS categoryid,
+    t_m_s_award_notices.permitusage AS permittedusage,
+    COALESCE(
+        t_m_s_award_notices.tin,
+        (
+            SELECT
+                tenantaccountfile.tenantaccttin
+            FROM
+                tenantaccountfile
+            WHERE
+                tenantaccountfile.clientacctcde = t_m_s_award_notices.clientacctcde
+            LIMIT
+                1
+        )
+    ) AS tin,
     t_m_s_award_notices.foperiodfrdte AS fitoutfrom,
     t_m_s_award_notices.foperiodtodte AS fitoutto,
-    t_m_s_award_notices.br_tin AS headofficetin,
-    t_m_s_award_notices.br_address AS headofficeaddress,
-    '10' AS status,
+    (
+        SELECT
+            tenantaccountfile.tenantaccttin
+        FROM
+            tenantaccountfile
+        WHERE
+            tenantaccountfile.clientacctcde = t_m_s_award_notices.clientacctcde
+        LIMIT
+            1
+    ) AS headofficetin,
+    (
+        SELECT
+            tenantaccountfile.tenantacctaddr
+        FROM
+            tenantaccountfile
+        WHERE
+            tenantaccountfile.clientacctcde = t_m_s_award_notices.clientacctcde
+        LIMIT
+            1
+    ) AS headofficeaddress,
+    10 AS STATUS,
     CASE
         WHEN t_m_s_award_notices.posted = 0 THEN 10
-        WHEN t_m_s_award_notices.posted = 1 AND terminate = 0 THEN 20
-        WHEN t_m_s_award_notices.terminate = 1 AND posted = 1 THEN 30
+        WHEN t_m_s_award_notices.posted = 1
+        AND NOT contractcde = ''
+        AND termsofleasecde IS NOT NULL
+        AND termsofleasecde <> '' THEN 20
+        WHEN t_m_s_award_notices.terminate = 1 THEN 30
+        ELSE 30
     END AS `state`,
+    '' AS postedat,
+    '1' AS postedby,
+    '' AS terminatedby,
     t_m_s_award_notices.terminatedte AS terminatedat,
     t_m_s_award_notices.preparedby AS createdby,
     t_m_s_award_notices.preparedby AS updatedby,
-    taf.id + 689 AS clientid,
     '1990-01-01 12:00:00' AS created_at,
     '1990-01-01 12:00:00' AS updated_at
-FROM clientofferfile AS t_m_s_award_notices
-LEFT JOIN tenantaccountfile taf ON t_m_s_award_notices.clientnme = taf.tenantacctnme
-LEFT JOIN locationfile lof ON t_m_s_award_notices.loccde = lof.loccde
-GROUP BY t_m_s_award_notices.id;
+FROM
+    clientofferfile AS t_m_s_award_notices;
 
 SELECT
-    id + 1046,
-    id + 1046 AS contracts_tmsawardnoticeid,
+    id + 1047,
+    id + 1047 AS contracts_tmsawardnoticeid,
     '1' AS contracts_mallid,
+    MD5(id + 1047) AS contracts_hashid,
     termsofleasecde AS contracts_anno,
-    id + 1046 AS contracts_counter,
-    NULL AS contracts_hashid,
+    1 AS contracts_counter,
     contractcde AS contracts_contractid,
-    CASE
-        WHEN contractstatus = 0 THEN 10
-        WHEN contractstatus = 1 THEN 20
-        ELSE 10
-    END AS contracts_status,
+    10 AS contracts_status,
     CASE
         WHEN contractposted = 0 THEN 10
-        WHEN contractposted = 1 THEN 20
+        WHEN contractposted = 1
+        AND NOT contractcde = ''
+        AND termsofleasecde IS NOT NULL
+        AND termsofleasecde <> '' THEN 20
+        ELSE 10
     END AS `contracts_state`,
     '1990-01-01 12:00:00' AS created_at,
     '1990-01-01 12:00:00' AS updated_at
-FROM clientofferfile AS t_m_s_contracts;
+FROM
+    clientofferfile AS t_m_s_contracts;
 
 SELECT
-    contract.id	AS	tms_contract_id	,
-    tol.id	AS	awardnoticeid	,
+    t_m_s_a_n_rental_charges.id + 89476 AS id,
+    clientofferfile.id + 1047 AS tms_contract_id,
+    clientofferfile.id + 1047 AS awardnoticeid,
     CASE
-        WHEN rs.rsnme = 'FIXED RENT' THEN 2
-        WHEN rs.rsnme = 'BASIC AND PERCENTAGE RENT' THEN 4
-        WHEN rs.rsnme = 'BASIC PLUS PERCENTAGE OR MINIMUM' THEN 4
+        WHEN t_m_s_a_n_rental_charges.percentrent = 0 THEN 1
+        WHEN t_m_s_a_n_rental_charges.percentrent > 0 THEN 3
     END AS rentalschemeid,
-    periodfrdte	AS	fromdate	,
-    periodtodte	AS	todate	,
-    basicrate	AS	basicorfixedrate	,
-    percentrent	AS	percentagerate	,
+    periodfrdte AS fromdate,
+    periodtodte AS todate,
+    basicrate AS basicorfixedrate,
+    percentrent AS percentagerate,
     '0' AS ari,
-    minrent	AS	minimumrate	,
-    uom	AS	uom	,
-    secdepchargerate	AS	secdep	,
-    secdepmonths	AS	sdma	,
-    advrentchargerate	AS	advrent	,
-    constructionchargerate	AS	conbond	,
+    minrent AS minimumrate,
+    uom AS uom,
+    secdepchargerate AS secdep,
+    secdepmonths AS sdma,
+    advrentchargerate AS advrent,
+    constructionchargerate AS conbond,
     CASE
         WHEN t_m_s_a_n_rental_charges.cancelled = 0 THEN 10
         ELSE 20
     END AS `status`,
-    '00-00-0000' AS createdby,
+    '0' AS createdby,
     '0' AS updatedby,
     '1990-01-01 12:00:00' AS created_at,
     '1990-01-01 12:00:00' AS updated_at
-FROM rentalchargesfile AS t_m_s_a_n_rental_charges
-LEFT JOIN clientofferfile contract ON t_m_s_a_n_rental_charges.contractcde = contract.contractcde
-LEFT JOIN clientofferfile tol ON t_m_s_a_n_rental_charges.termsofleasecde = tol.termsofleasecde
-LEFT JOIN rentalschemefile rs ON t_m_s_a_n_rental_charges.rentscheme = rs.rsnme
-ORDER BY t_m_s_a_n_rental_charges.id;  
+FROM
+    rentalchargesfile AS t_m_s_a_n_rental_charges
+    LEFT JOIN clientofferfile ON t_m_s_a_n_rental_charges.transcde = clientofferfile.offercde
+    AND t_m_s_a_n_rental_charges.termsofleasecde = clientofferfile.termsofleasecde
+ORDER BY
+    t_m_s_a_n_rental_charges.id;
+
+SELECT
+    t_m_s_a_n_other_charges.id + 80089 AS id,
+    clientofferfile.id + 1047 AS tms_contract_id,
+    clientofferfile.id + 1047 AS tms_awardnotice_id,
+    0 AS applicable_charge_id,
+    t_m_s_a_n_other_charges.rate,
+    CASE
+        WHEN t_m_s_a_n_other_charges.costtypeuom = 'Per sqm.' OR t_m_s_a_n_other_charges.costtypeuom = 'Per sqm' THEN 'sqm'
+        WHEN t_m_s_a_n_other_charges.costtypeuom = 'Per unit' THEN 'perconsumption'
+    END AS uom,
+    t_m_s_a_n_other_charges.othrchadesc as remarks,
+    CASE
+        WHEN t_m_s_a_n_other_charges.cancelled = 0 THEN 10
+        ELSE 20
+    END AS `status`,
+    '0' AS created_by,
+    '0' AS updated_by,
+    '1990-01-01 12:00:00' AS created_at,
+    '1990-01-01 12:00:00' AS updated_at
+FROM
+    otherchargesfile AS t_m_s_a_n_other_charges
+    LEFT JOIN clientofferfile ON t_m_s_a_n_other_charges.transcde = clientofferfile.offercde
+    AND t_m_s_a_n_other_charges.termsofleasecde = clientofferfile.termsofleasecde
+WHERE
+    t_m_s_a_n_other_charges.othrchadesc NOT IN (
+        'SECURITY DEPOSIT',
+        'ADVANCE RENT',
+        'CONSTRUCTION BOND'
+    )
+    AND CURDATE() BETWEEN effectfrdte AND effecttodte
+ORDER BY
+    t_m_s_a_n_other_charges.id;
 
