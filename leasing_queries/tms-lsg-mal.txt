@@ -215,30 +215,73 @@ FROM
     clientofferfile AS t_m_s_award_notices;
 
 SELECT
-    id + 1047,
+    id + 1047 + 1411,
     id + 1047 AS contracts_tmsawardnoticeid,
     '1' AS contracts_mallid,
-    MD5(id + 1047) AS contracts_hashid,
+    MD5(id + 1047 + 1411) AS contracts_hashid,
     termsofleasecde AS contracts_anno,
     1 AS contracts_counter,
     contractcde AS contracts_contractid,
     10 AS contracts_status,
     CASE
-        WHEN contractposted = 0 THEN 10
-        WHEN contractposted = 1
-        AND NOT contractcde = ''
+        WHEN leasepostdte IS NULL THEN 10
+        WHEN leasepostdte IS NOT NULL
+        AND contractcde <> ''
         AND termsofleasecde IS NOT NULL
-        AND termsofleasecde <> '' THEN 20
+        AND termsofleasecde <> ''
+        AND cancelled != 1
+        AND terminatedte IS NULL THEN 20
+        WHEN terminatedte IS NOT NULL THEN 30
         ELSE 10
-    END AS `contracts_state`,
+    END AS contracts_state,
     '1990-01-01 12:00:00' AS created_at,
     '1990-01-01 12:00:00' AS updated_at
 FROM
-    clientofferfile AS t_m_s_contracts;
+    clientofferfile AS t_m_s_contracts
+UNION
+ALL
+SELECT
+    id + 1047 + 1411 + 926 AS id,
+    id + 1047 AS contracts_tmsawardnoticeid,
+    '1' AS contracts_mallid,
+    MD5(id + 1047 + 1411 + 926) AS contracts_hashid,
+    termsofleasecde AS contracts_anno,
+    1 AS contracts_counter,
+    contractrncde AS contracts_contractid,
+    10 AS contracts_status,
+    CASE
+        WHEN postdte IS NULL THEN 10
+        WHEN postdte IS NOT NULL
+        AND contractrncde <> ''
+        AND termsofleasecde IS NOT NULL
+        AND termsofleasecde <> ''
+        AND cancelled != 1
+        AND terminatedte IS NULL THEN 20
+        WHEN terminatedte IS NOT NULL THEN 30
+        ELSE 10
+    END AS contracts_state,
+    '1990-01-01 12:00:00' AS created_at,
+    '1990-01-01 12:00:00' AS updated_at
+FROM
+    contractrenewalfile AS t_m_s_contracts;
 
 SELECT
     t_m_s_a_n_rental_charges.id + 89476 AS id,
-    clientofferfile.id + 1047 AS tms_contract_id,
+    CASE
+        WHEN t_m_s_a_n_rental_charges.contract_renew = 1 THEN (
+            SELECT
+                id + 1047 + 1411 + 926
+            FROM
+                contractrenewalfile
+            WHERE
+                t_m_s_a_n_rental_charges.contractrncde = contractrenewalfile.contractrncde
+            ORDER BY
+                id DESC
+            LIMIT
+                1
+        )
+        ELSE clientofferfile.id + 1047 + 1411
+    END AS tms_contract_id,
     clientofferfile.id + 1047 AS awardnoticeid,
     CASE
         WHEN t_m_s_a_n_rental_charges.percentrent = 0 THEN 1
@@ -250,7 +293,10 @@ SELECT
     percentrent AS percentagerate,
     '0' AS ari,
     minrent AS minimumrate,
-    uom AS uom,
+    CASE
+        WHEN uom = "Per unit" THEN "PerUnit"
+        ELSE "SQM"
+    END AS uom,
     secdepchargerate AS secdep,
     secdepmonths AS sdma,
     advrentchargerate AS advrent,
@@ -272,7 +318,21 @@ ORDER BY
 
 SELECT
     t_m_s_a_n_other_charges.id + 80089 AS id,
-    clientofferfile.id + 1047 AS tms_contract_id,
+    CASE
+        WHEN t_m_s_a_n_other_charges.contract_renew = 1 THEN (
+            SELECT
+                id + 1047 + 1411 + 926
+            FROM
+                contractrenewalfile
+            WHERE
+                t_m_s_a_n_other_charges.contractrncde = contractrenewalfile.contractrncde
+            ORDER BY
+                id DESC
+            LIMIT
+                1
+        )
+        ELSE clientofferfile.id + 1047 + 1411
+    END AS tms_contract_id,
     clientofferfile.id + 1047 AS tms_awardnotice_id,
     0 AS applicable_charge_id,
     t_m_s_a_n_other_charges.rate,
