@@ -232,6 +232,7 @@ SELECT
         AND termsofleasecde IS NOT NULL
         AND termsofleasecde <> ''
         AND cancelled != 1
+        AND CURRENT_DATE BETWEEN leasetermfrdte AND leasetermtodte
         AND terminatedte IS NULL THEN 20
         WHEN terminatedte IS NOT NULL THEN 30
         ELSE 10
@@ -258,6 +259,7 @@ SELECT
         AND termsofleasecde IS NOT NULL
         AND termsofleasecde <> ''
         AND cancelled != 1
+        AND CURRENT_DATE BETWEEN leasetermfrdte AND leasetermtodte
         AND terminatedte IS NULL THEN 20
         WHEN terminatedte IS NOT NULL THEN 30
         ELSE 10
