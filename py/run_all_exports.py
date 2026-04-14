@@ -67,7 +67,7 @@ for file_path in priority_scripts:
             ["python", str(file_path)],
             capture_output=True,
             text=True,
-            timeout=60
+            timeout=36000
         )
         if result.returncode == 0:
             print(result.stdout)
