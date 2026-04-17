@@ -28,6 +28,8 @@ run_leasing = True
 
 run_accounting = True
 
+run_treasury = True
+
 isFood = {
     "Affiliate": False,
     "Amusement/Recreational": False,
@@ -277,6 +279,8 @@ cursor.execute(
         t_m_s_service_invoice_charges.t_m_s_service_invoice_id,
         t_m_s_service_invoice_charges.award_notice_no,
         t_m_s_service_invoice_charges.hash,
+        t_m_s_service_invoice_charges.posting_date,
+        t_m_s_service_invoice_charges.amount,
         (
             SELECT
                 t_m_s_business_categories.description
@@ -319,6 +323,7 @@ t_m_s_service_invoice_charges = cursor.fetchall()
 
 update2 = []
 ignored2 = []
+payments2 = []
 
 lookup_qv = {}
 with open("generated_exports\\sn_map_qav.csv", newline="") as csvfile1:
@@ -345,6 +350,8 @@ for chrg in t_m_s_service_invoice_charges:
     chrg_award_notice_no = str(chrg["award_notice_no"]).strip()
     chrg_rentschemeid = chrg["rentalschemeid"]
     chrg_buss_category = chrg["buss_category"]
+    chrg_posting_date = chrg["posting_date"]
+    chrg_amount = chrg["amount"]
     chrg_sn = str(chrg["hash"]).strip()
 
     up_t_m_s_service_invoice_id = ""
@@ -394,6 +401,14 @@ for chrg in t_m_s_service_invoice_charges:
         )
 
     if (
+        chrg_description
+        == "HAZ. WASTE DISPOSAL - PARTICIPATION FEE (INLINE, FOOD)"
+    ):
+        chrg_description = (
+            "HAZARDOUS WASTE DISPOSAL - PARTICIPATION FEE (INLINE, FOOD)"
+        )
+
+    if (
         chrg_description == "ADVERTISING FUND"
         or chrg_description == "ADVERTISING FUND (KINETIC QA)"
     ):
@@ -413,6 +428,9 @@ for chrg in t_m_s_service_invoice_charges:
             chrg_description = "ADVERTISING FUND - FOOD HALL TENANT FIXED"
         elif int(chrg_rentschemeid) == 3 or int(chrg_rentschemeid) == 4:
             chrg_description = "ADVERTISING FUND - FOOD HALL TENANT PERCENTAGE"
+
+    if chrg_description == "NEW SECURITY POSTING (3 HOURS)":
+        chrg_description = "SECURITY POSTING (3 HOURS)"
 
     if chrg_description == "BASIC/BASE RENT" or chrg_description == "PERCENTAGE RENT":
         if int(chrg_rentschemeid) == 1 or int(chrg_rentschemeid) == 2:
@@ -470,19 +488,52 @@ for chrg in t_m_s_service_invoice_charges:
     )
 
     # t_m_s_service_invoice_id, ewt_code, charge_id, charge_type, charge_code, non_vatable, priority_order, id
-    if tms_charge is not None:
-        update2.append(
-            (
-                up_t_m_s_service_invoice_id,
-                tms_charge["ewt_code"],
-                tms_charge["id"],
-                tms_charge["charge_type"],
-                tms_charge["code"],
-                tms_charge["non_vatable"],
-                tms_charge["priority_order"],
-                chrg_id,
+    if tms_charge is not None or chrg_description == "TRANSFERRED PAYMENT" or chrg_description == "APPLICATION OF ADVANCE RENT":
+        if chrg_description == "TRANSFERRED PAYMENT":
+            payments2.append(
+                (
+                    up_t_m_s_service_invoice_id,
+                    chrg_award_notice_no,
+                    chrg_posting_date,
+                    "TRANSFERED PAYMENT" + str(up_t_m_s_service_invoice_id),
+                    "TRANSFERED PAYMENT",
+                    chrg_amount,
+                    chrg_sn,
+                    1,
+                    1,
+                    '1990-01-01 12:00:00',
+                    '1990-01-01 12:00:00',
+                )
             )
-        )
+        elif chrg_description == "APPLICATION OF ADVANCE RENT":
+            payments2.append(
+                (
+                    up_t_m_s_service_invoice_id,
+                    chrg_award_notice_no,
+                    chrg_posting_date,
+                    "APPLICATION OF ADVANCE RENT" + str(up_t_m_s_service_invoice_id),
+                    "APPLICATION OF ADVANCE RENT",
+                    chrg_amount,
+                    chrg_sn,
+                    1,
+                    1,
+                    '1990-01-01 12:00:00',
+                    '1990-01-01 12:00:00',
+                )
+            )
+        else:
+            update2.append(
+                (
+                    up_t_m_s_service_invoice_id,
+                    tms_charge["ewt_code"],
+                    tms_charge["id"],
+                    tms_charge["charge_type"],
+                    tms_charge["code"],
+                    tms_charge["non_vatable"],
+                    tms_charge["priority_order"],
+                    chrg_id,
+                )
+            )
 
     else:
         ignored2.append(chrg_description)
@@ -520,7 +571,7 @@ cursor.execute(
     SELECT 
         t_m_s_service_invoice_payments.id,
         t_m_s_service_invoice_payments.award_notice_no,
-        t_m_s_service_invoice_payments.hash,
+        t_m_s_service_invoice_payments.hash
     FROM
         t_m_s_service_invoice_payments
     """
@@ -533,7 +584,7 @@ ignore3 = []
 
 
 for pmt in t_m_s_service_invoice_payments:
-    pyt_id = chrg_id = pmt["id"]
+    pyt_id = pmt["id"]
     pyt_sn = str(pmt["hash"]).strip()
     pyt_award_notice_no = str(pmt["award_notice_no"]).strip()
 
@@ -541,22 +592,22 @@ for pmt in t_m_s_service_invoice_payments:
     pyt_mallid = 1
     if "QAV" in str(pyt_award_notice_no).upper():
         pyt_mallid = 2
-        up_t_m_s_service_invoice_id = lookup_qv.get(chrg_sn)
+        up_t_m_s_service_invoice_id = lookup_qv.get(pyt_sn)
         if (
             up_t_m_s_service_invoice_id is not None
             and up_t_m_s_service_invoice_id != ""
         ):
             up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id)
     elif "MLB" in str(pyt_award_notice_no).upper():
-        cpyt_mallid = 1
-        up_t_m_s_service_invoice_id = lookup_mb.get(chrg_sn)
+        pyt_mallid = 1
+        up_t_m_s_service_invoice_id = lookup_mb.get(pyt_sn)
         if (
             up_t_m_s_service_invoice_id is not None
             and up_t_m_s_service_invoice_id != ""
         ):
             up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id) + 132088
 
-    if tms_charge is not None:
+    if up_t_m_s_service_invoice_id != "":
         update3.append((up_t_m_s_service_invoice_id, pyt_id))
 
     else:
@@ -575,3 +626,90 @@ sql3 = """
 if run_accounting:
     cursor.executemany(sql3, update3)
     conn.commit()
+
+sql2a = """
+   INSERT INTO t_m_s_service_invoice_payments
+    (
+        t_m_s_service_invoice_id,
+        award_notice_no,
+        posting_date,
+        reference_no,
+        payment_description,
+        amount,
+        hash,
+        updated_by,
+        created_by,
+        created_at,
+        updated_at
+    )
+    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);
+"""
+# note: order must match query (value first, then id)
+
+if run_accounting:
+    cursor.executemany(sql2a, payments2)
+    conn.commit()
+
+
+## TREASURY
+cursor.execute(
+    """
+    SELECT 
+        t_m_s_treasuries.id,
+        t_m_s_treasuries.mall_id,
+        t_m_s_treasuries.remarks
+    FROM
+        t_m_s_treasuries
+    """
+)
+
+t_m_s_treasury = cursor.fetchall()
+
+update4 = []
+ignore4 = []
+
+
+for orar in t_m_s_treasury:
+    orar_id = orar["id"]
+    orar_sn = str(orar["remarks"]).strip()
+    orar_mall_id = str(orar["mall_id"]).strip()
+
+    up_t_m_s_service_invoice_id = ""
+    if int(orar_mall_id) == 2:
+        up_t_m_s_service_invoice_id = lookup_qv.get(orar_sn)
+        if (
+            up_t_m_s_service_invoice_id is not None
+            and up_t_m_s_service_invoice_id != ""
+        ):
+            up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id)
+    elif int(orar_mall_id) == 1:
+        up_t_m_s_service_invoice_id = lookup_mb.get(orar_sn)
+        if (
+            up_t_m_s_service_invoice_id is not None
+            and up_t_m_s_service_invoice_id != ""
+        ):
+            up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id) + 132088
+
+    if up_t_m_s_service_invoice_id != "":
+        update4.append((up_t_m_s_service_invoice_id, orar_id))
+
+    else:
+        ignore4.append(orar_id)
+
+print(len(ignore4))
+
+sql4 = """
+    UPDATE t_m_s_treasuries
+    SET 
+        service_invoice_id = %s
+    WHERE id = %s AND service_invoice_id = 0
+"""
+# note: order must match query (value first, then id)
+
+if run_treasury:
+    cursor.executemany(sql4, update4)
+    conn.commit()
+
+
+
+

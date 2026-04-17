@@ -117,6 +117,7 @@ FROM
 WHERE
     NOT t_m_s_service_invoice_charges.sn IN ("", 0)
     AND t_m_s_service_invoice_charges.sn IS NOT NULL
+    AND NOT t_m_s_service_invoice_charges.total = 0
 UNION
 ALL
 SELECT
@@ -143,6 +144,7 @@ FROM
 WHERE
     NOT t_m_s_service_invoice_charges.sn IN ("", 0)
     AND t_m_s_service_invoice_charges.sn IS NOT NULL
+    AND NOT t_m_s_service_invoice_charges.amt = 0
 UNION
 ALL
 SELECT
@@ -168,7 +170,8 @@ FROM
     dm AS t_m_s_service_invoice_charges
 WHERE
     NOT t_m_s_service_invoice_charges.sn IN ("", 0)
-    AND t_m_s_service_invoice_charges.sn IS NOT NULL;
+    AND t_m_s_service_invoice_charges.sn IS NOT NULL
+    AND NOT t_m_s_service_invoice_charges.amt = 0;
 
 SELECT
     t_m_s_debit_credit_memos.id + 49544 + 316687 AS id,
@@ -246,16 +249,20 @@ WHERE
     AND NOT sn = 0;
 
 SELECT
-    t_m_s_service_invoice_payments.id + 48863 AS id,
+    t_m_s_service_invoice_payments.id + 30132 + 48863 AS id,
     0 AS t_m_s_service_invoice_id,
     t_m_s_service_invoice_payments.tc AS award_notice_no,
-    t_m_s_service_invoice_payments.edt AS posting_date,
+    t_m_s_service_invoice_payments.odt AS posting_date,
     t_m_s_service_invoice_payments.orn AS reference_no,
     "PAYMENT" AS payment_description,
-    COALESCE(
-        t_m_s_service_invoice_payments.camt,
-        t_m_s_service_invoice_payments.amt,
-        0
+    -(
+        COALESCE(
+            t_m_s_service_invoice_payments.amt,
+            0
+        ) + COALESCE(
+            t_m_s_service_invoice_payments.ewt,
+            0
+        )
     ) AS amount,
     t_m_s_service_invoice_payments.sn AS `hash`,
     1 AS updated_by,
@@ -263,8 +270,164 @@ SELECT
     '1990-01-01 12:00:00' AS updated_at,
     '1990-01-01 12:00:00' AS created_at
 FROM
-    or2 AS t_m_s_service_invoice_payments
+    or1 AS t_m_s_service_invoice_payments
+WHERE
+    t_m_s_service_invoice_payments.del_dt IS NULL
+    AND t_m_s_service_invoice_payments.cancel_dt IS NULL
+    AND t_m_s_service_invoice_payments.stat = 1
+UNION
+ALL
+SELECT
+    t_m_s_service_invoice_payments.id + 30132 + 48863 + 16035 AS id,
+    0 AS t_m_s_service_invoice_id,
+    t_m_s_service_invoice_payments.tc AS award_notice_no,
+    t_m_s_service_invoice_payments.ewtdt AS posting_date,
+    CONCAT("EWT",t_m_s_service_invoice_payments.id + 30132 + 48863 + 16035) AS reference_no,
+    CONCAT("EWT (", t_m_s_service_invoice_payments.ewtdt1, "-", t_m_s_service_invoice_payments.ewtdt2, ")") AS payment_description,
+    -COALESCE(
+        t_m_s_service_invoice_payments.amt,
+        0
+    )AS amount,
+    (SELECT 
+            sn
+        FROM
+            single_soa1
+        WHERE
+            (single_soa1.posted = 1
+                OR single_soa1.prnt = 1)
+                AND single_soa1.tc = t_m_s_service_invoice_payments.tc
+                AND single_soa1.sdt1 = t_m_s_service_invoice_payments.sdt1
+                AND single_soa1.sdt2 = t_m_s_service_invoice_payments.sdt2
+        LIMIT 1) AS hash,
+    1 AS updated_by,
+    1 AS created_by,
+    '1990-01-01 12:00:00' AS updated_at,
+    '1990-01-01 12:00:00' AS created_at
+FROM
+    single_ewt AS t_m_s_service_invoice_payments
 WHERE
     t_m_s_service_invoice_payments.deldate IS NULL
     AND t_m_s_service_invoice_payments.candate IS NULL
-    AND t_m_s_service_invoice_payments.edt IS NOT NULL;
+    AND t_m_s_service_invoice_payments.stat = 1;
+
+
+
+
+SELECT 
+    t_m_s_treasuries.id + 30132 + 48863 AS id,
+    CONCAT('TRSY-CR0-', t_m_s_treasuries.id) AS payment_id,
+    0 AS service_invoice_id,
+    t_m_s_treasuries.odt AS transaction_date,
+    t_m_s_treasuries.edt AS receipt_date,
+    '' AS payment_type,
+    t_m_s_treasuries.orn AS reference_no,
+    t_m_s_treasuries.chk AS check_no,
+    '' AS check_date,
+    '' AS check_bank,
+    t_m_s_treasuries.fop AS mode_of_payment,
+    0 AS bank_account_no,
+    t_m_s_treasuries.amt AS amount_paid,
+    CASE
+        WHEN t_m_s_treasuries.for_or = 1 THEN 'AR'
+        ELSE 'CR'
+    END AS receipt_type,
+    '' AS pdc,
+    t_m_s_treasuries.ewt AS ewt,
+    '' AS total,
+    t_m_s_treasuries.edt AS ar_cr_date,
+    t_m_s_treasuries.tn AS payor,
+    '' AS tin_no,
+    '' AS location,
+    t_m_s_treasuries.printby AS checked_by,
+    t_m_s_treasuries.noted AS noted_by,
+    (SELECT 
+            sn
+        FROM
+            or2
+        WHERE
+            or2.orn = t_m_s_treasuries.orn
+        LIMIT 1) AS remarks,
+    30 AS `status`,
+    10 AS print_status,
+    1 AS mall_id,
+    '' AS canceled_by,
+    '' AS cancel_reason,
+    '' AS canceled_at,
+    1 AS created_by,
+    1 AS updated_by,
+    '1990-01-01 12:00:00' AS created_at,
+    '1990-01-01 12:00:00' AS updated_at
+FROM
+    or1 AS t_m_s_treasuries
+WHERE
+    t_m_s_treasuries.posted = 1
+        AND t_m_s_treasuries.del_dt IS NULL
+        AND t_m_s_treasuries.cancel_dt IS NULL 
+UNION ALL SELECT 
+    t_m_s_treasuries.id + 30132 + 48863 + 16035 AS id,
+    CONCAT('TRSY-CR0-', t_m_s_treasuries.id) AS payment_id,
+    (SELECT 
+            id
+        FROM
+            single_soa1
+        WHERE
+            t_m_s_treasuries.tc = single_soa1.tc
+                AND (single_soa1.posted = 1
+                OR single_soa1.prnt = 1)
+        LIMIT 1) AS service_invoice_id,
+    t_m_s_treasuries.sdt2 AS transaction_date,
+    t_m_s_treasuries.sdt2 AS receipt_date,
+    '' AS payment_type,
+    CONCAT('EWT', t_m_s_treasuries.id + 30132) AS reference_no,
+    '' AS check_no,
+    '' AS check_date,
+    '' AS check_bank,
+    1 AS mode_of_payment,
+    0 AS bank_account_no,
+    0 AS amount_paid,
+    'CR' AS receipt_type,
+    '' AS pdc,
+    t_m_s_treasuries.amt AS ewt,
+    '' AS total,
+    t_m_s_treasuries.sdt2 AS ar_cr_date,
+    (SELECT 
+            clientnme
+        FROM
+            clientofferfile
+        WHERE
+            clientofferfile.termsofleasecde = t_m_s_treasuries.tc
+        LIMIT 1) AS payor,
+    (SELECT 
+            tin
+        FROM
+            clientofferfile
+        WHERE
+            clientofferfile.termsofleasecde = t_m_s_treasuries.tc
+        LIMIT 1) AS tin,
+    (SELECT 
+            loccde
+        FROM
+            clientofferfile
+        WHERE
+            clientofferfile.termsofleasecde = t_m_s_treasuries.tc
+        LIMIT 1) AS location,
+    t_m_s_treasuries.user AS checked_by,
+    'ANGIE DELOS SANTOS' AS noted_by,
+    'MIGRATED EWT' AS remarks,
+    30 AS `status`,
+    10 AS print_status,
+    1 AS mall_id,
+    '' AS canceled_by,
+    '' AS cancel_reason,
+    '' AS canceled_at,
+    1 AS created_by,
+    1 AS updated_by,
+    '1990-01-01 12:00:00' AS created_at,
+    '1990-01-01 12:00:00' AS updated_at
+FROM
+    single_ewt AS t_m_s_treasuries
+WHERE
+    t_m_s_treasuries.stat = 1
+        AND t_m_s_treasuries.deldate IS NULL
+        AND t_m_s_treasuries.candate IS NULL;
+
