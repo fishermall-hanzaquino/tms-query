@@ -7,7 +7,7 @@ SELECT
     contact AS contact_number,
     address,
     tin as tin_number
-FROM organizerfile;
+FROM organizerfile AS e_b_m_organizers;
 
 SELECT
     id,
@@ -17,7 +17,7 @@ SELECT
         WHEN locdsc LIKE '%mlb%' THEN 1
         ELSE 2
     END AS branch
-FROM locationfile;
+FROM locationfile AS e_b_m_locations;
 
 // main module
 
@@ -29,7 +29,7 @@ SELECT
     CASE
         WHEN e_b_m_events_epf_information.branchcde = 'BR000001' THEN 2
         ELSE 1
-    END AS branch, 
+    END AS mall_id, 
     e_b_m_events_epf_information.clienttype_id AS client_type,
     e_b_m_events_epf_information.epftype_id AS event_type,
     eventclassfile.eventclass as classification,
