@@ -318,7 +318,7 @@ SELECT
     CONCAT('TRSY-CR0-', t_m_s_treasuries.id) AS payment_id,
     0 AS service_invoice_id,
     t_m_s_treasuries.odt AS transaction_date,
-    t_m_s_treasuries.edt AS receipt_date,
+    t_m_s_treasuries.odt AS receipt_date,
     '' AS payment_type,
     t_m_s_treasuries.orn AS reference_no,
     t_m_s_treasuries.chk AS check_no,
@@ -326,13 +326,13 @@ SELECT
     '' AS check_bank,
     t_m_s_treasuries.fop AS mode_of_payment,
     0 AS bank_account_no,
-    t_m_s_treasuries.amt AS amount_paid,
+    COALESCE(t_m_s_treasuries.amt, 0) AS amount_paid,
     CASE
         WHEN t_m_s_treasuries.for_or = 1 THEN 'AR'
         ELSE 'CR'
     END AS receipt_type,
-    '' AS pdc,
-    t_m_s_treasuries.ewt AS ewt,
+    0 AS pdc,
+    COALESCE(t_m_s_treasuries.ewt, 0) AS ewt,
     '' AS total,
     t_m_s_treasuries.edt AS ar_cr_date,
     t_m_s_treasuries.tn AS payor,
@@ -386,8 +386,8 @@ UNION ALL SELECT
     0 AS bank_account_no,
     0 AS amount_paid,
     'CR' AS receipt_type,
-    '' AS pdc,
-    t_m_s_treasuries.amt AS ewt,
+    0 AS pdc,
+    COALESCE(t_m_s_treasuries.amt, 0) AS ewt,
     '' AS total,
     t_m_s_treasuries.sdt2 AS ar_cr_date,
     (SELECT 

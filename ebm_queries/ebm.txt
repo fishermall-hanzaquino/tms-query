@@ -21,7 +21,6 @@ FROM locationfile;
 
 // main module
 
-// epf
 
 SELECT
     e_b_m_events_epf_information.id,
@@ -32,7 +31,7 @@ SELECT
         ELSE 1
     END AS branch, 
     e_b_m_events_epf_information.clienttype_id AS client_type,
-    e_b_m_events_epf_information.epftypefile AS event_type,
+    e_b_m_events_epf_information.epftype_id AS event_type,
     eventclassfile.eventclass as classification,
     e_b_m_events_epf_information.event_type AS transaction_type,
     e_b_m_events_epf_information.title,
@@ -54,8 +53,8 @@ LEFT JOIN eventclassfile
 SELECT
     e_b_m_events_rental_costs.id,
     CASE
-        WHEN e_b_m_events_rental_costs.eventsched_id = 0 AND moa.epf_id <> 0 THEN moa.epf_id
-        ELSE e_b_m_events_rental_costs.eventsched_id
+        WHEN e_b_m_events_rental_costs.event_id = 0 AND moa.epf_id <> 0 THEN moa.epf_id
+        ELSE e_b_m_events_rental_costs.event_id
     END AS epf_id,
     e_b_m_events_rental_costs.moa_id,
     CASE
@@ -79,20 +78,21 @@ SELECT
     e_b_m_events_rental_costs.remarks
 FROM eventperiodcoveredfile AS e_b_m_events_rental_costs
 LEFT JOIN moafile AS moa
-    ON e_b_m_events_other_services.moa_id = moa.id;
+    ON e_b_m_events_rental_costs.moa_id = moa.id;
+
 
 // moa
 SELECT
     e_b_m_events_moa_information.id,
     e_b_m_events_moa_information.epf_id,
     e_b_m_events_moa_information.moacde AS moa_id,
-    epf.dte_received AS loi
+    epf.dte_received AS loi,
     CASE
         WHEN e_b_m_events_moa_information.branchcde = 'BR000001' THEN 2
         ELSE 1
     END AS branch,
     epf.clienttype_id AS client_type,
-    epf.epftypefile AS event_type,
+    epf.epftype_id AS event_type,
     eventclassfile.eventclass as classification,
     epf.event_type AS transaction_type,
     epf.title,
@@ -123,8 +123,7 @@ SELECT
         WHEN e_b_m_events_moa_information.cancelled = 1 THEN 20
         ELSE 30
     END AS 'status',
-    e_b_m_events_moa_information.due_date AS duedate,
-    // e_b_m_events_moa_information.
+    e_b_m_events_moa_information.due_date AS duedate
 FROM moafile AS e_b_m_events_moa_information
 LEFT JOIN eventfile AS epf
     ON e_b_m_events_moa_information.epf_id = epf.id
@@ -133,7 +132,6 @@ LEFT JOIN eventclassfile
 
 // to do other services,  ingress egress
 
-// ingress egress
 SELECT
     e_b_m_events_ingress_egress.id,
     CASE
