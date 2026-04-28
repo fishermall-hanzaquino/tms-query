@@ -127,8 +127,6 @@ SELECT
     epf.event_type AS transaction_type,
     epf.title,
     epf.location,
-    epf.adv_rent,
-    epf.sec_dep,
     epf.request AS requests,
     epf.remarks,
     epf.recommendation AS recommendations,
