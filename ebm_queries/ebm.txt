@@ -19,8 +19,20 @@ SELECT
     END AS mall_id
 FROM locationfile AS e_b_m_locations;
 
+SELECT
+    e_b_m_authorized_signatories.id,
+    e_b_m_authorized_signatories.lessee_rep AS name,
+    e_b_m_authorized_signatories.lessee_rep_position AS designation,
+    e_b_m_authorized_signatories.lessee_rep_contact AS contact_number,
+    '10' AS status,
+    moa.org_id AS organizer_id
+FROM representativefile AS e_b_m_authorized_signatories
+LEFT JOIN moafile AS moa
+    ON e_b_m_authorized_signatories.moa_id = moa.id;
+
 // main module
 
+// epf
 
 SELECT
     e_b_m_events_epf_information.id,
@@ -30,7 +42,15 @@ SELECT
         WHEN e_b_m_events_epf_information.branchcde = 'BR000001' THEN 2
         ELSE 1
     END AS branch, 
-    e_b_m_events_epf_information.clienttype_id AS client_type,
+    CASE
+        WHEN e_b_m_events_epf_information.clienttype_id = 1 THEN 1
+        WHEN e_b_m_events_epf_information.clienttype_id = 2 THEN 2
+        ELSE 1
+    END AS client_type,
+    CASE
+        WHEN e_b_m_events_epf_information.clientoffer_id IS NOT NULL THEN e_b_m_events_epf_information.clientoffer_id
+        ELSE e_b_m_events_epf_information.org_id
+    END AS client_id,
     e_b_m_events_epf_information.epftype_id AS event_type,
     eventclassfile.eventclass as classification,
     e_b_m_events_epf_information.event_type AS transaction_type,
@@ -43,11 +63,14 @@ SELECT
     e_b_m_events_epf_information.recommendation AS recommendations,
     CASE
         WHEN e_b_m_events_epf_information.cancelled = 1 THEN 20
+        WHEN moa.id IS NOT NULL THEN 30
         ELSE 10
     END AS 'status'
 FROM eventfile as e_b_m_events_epf_information
 LEFT JOIN eventclassfile
-    ON e_b_m_events_epf_information.eventclass_id = eventclassfile.id;
+    ON e_b_m_events_epf_information.eventclass_id = eventclassfile.id
+LEFT JOIN moafile AS moa
+    ON e_b_m_events_epf_information.id = moa.epf_id;
 
 // rental cost
 SELECT
@@ -80,7 +103,6 @@ FROM eventperiodcoveredfile AS e_b_m_events_rental_costs
 LEFT JOIN moafile AS moa
     ON e_b_m_events_rental_costs.moa_id = moa.id;
 
-
 // moa
 SELECT
     e_b_m_events_moa_information.id,
@@ -91,12 +113,22 @@ SELECT
         WHEN e_b_m_events_moa_information.branchcde = 'BR000001' THEN 2
         ELSE 1
     END AS branch,
-    epf.clienttype_id AS client_type,
+    CASE
+        WHEN epf.clienttype_id = 1 THEN 1
+        WHEN epf.clienttype_id = 2 THEN 2
+        ELSE 1
+    END AS client_type,
+    CASE
+        WHEN epf.clientoffer_id IS NOT NULL THEN epf.clientoffer_id
+        ELSE epf.org_id
+    END AS client_id,
     epf.epftype_id AS event_type,
     eventclassfile.eventclass as classification,
     epf.event_type AS transaction_type,
     epf.title,
     epf.location,
+    epf.adv_rent,
+    epf.sec_dep,
     epf.request AS requests,
     epf.remarks,
     epf.recommendation AS recommendations,
@@ -119,8 +151,11 @@ SELECT
     // to do check status
     CASE
         WHEN e_b_m_events_moa_information.cancelled = 1 THEN 20
+        WHEN e_b_m_events_moa_information.approved_by > 0 THEN 40
         ELSE 30
     END AS 'status'
+    //e_b_m_events_moa_information.due_date AS duedate
+    // e_b_m_events_moa_information.
 FROM moafile AS e_b_m_events_moa_information
 LEFT JOIN eventfile AS epf
     ON e_b_m_events_moa_information.epf_id = epf.id
@@ -129,6 +164,7 @@ LEFT JOIN eventclassfile
 
 // to do other services,  ingress egress
 
+// ingress egress
 SELECT
     e_b_m_events_ingress_egress.id,
     CASE
