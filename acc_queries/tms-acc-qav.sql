@@ -63,11 +63,11 @@ SELECT
     t_m_s_service_invoices.payamt AS payment,
     t_m_s_service_invoices.chargeamt AS charges_for_month,
     t_m_s_service_invoices.beg + t_m_s_service_invoices.chargeamt + t_m_s_service_invoices.payamt AS amount_due,
-    "" AS vatable_sales,
-    "" AS vat_exempt_sales,
-    "" AS vat_zero_rated_sales,
-    "" AS vat_amount,
-    "" AS subtotal,
+    0 AS vatable_sales,
+    0 AS vat_exempt_sales,
+    0 AS vat_zero_rated_sales,
+    0 AS vat_amount,
+    0 AS subtotal,
     CONCAT("migrated", MD5(t_m_s_service_invoices.id)) AS `hash`,
     t_m_s_service_invoices.pby AS prepared_by,
     t_m_s_service_invoices.cby AS checked_by,
@@ -88,7 +88,47 @@ SELECT
 FROM
     single_soa1 AS t_m_s_service_invoices
     LEFT JOIN clientofferfile ON t_m_s_service_invoices.tc = clientofferfile.termsofleasecde
-    AND NOT t_m_s_service_invoices.tc = "";
+    AND NOT t_m_s_service_invoices.tc = ""
+UNION ALL
+SELECT
+    t_m_s_service_invoices.id + 132088 as id,
+    t_m_s_service_invoices.soano AS service_invoice_no,
+    "regular" AS `type`,
+    t_m_s_service_invoices.tol_moa_id AS award_notice_no,
+    "event" AS customer_type,
+    t_m_s_service_invoices.clientnme AS establishment,
+    t_m_s_service_invoices.clientnme AS bussiness_style,
+    t_m_s_service_invoices.periodfrom AS period_from,
+    t_m_s_service_invoices.periodto AS period_to,
+    t_m_s_service_invoices.statementdte AS statement_date,
+    t_m_s_service_invoices.duedte AS payment_due_date,
+    t_m_s_service_invoices.tol_moa_id AS tin,
+    t_m_s_service_invoices.tol_moa_id AS loc_code,
+    t_m_s_service_invoices.tol_moa_id AS total_area,
+    t_m_s_service_invoices.begin_balance AS beginning_balance,
+    t_m_s_service_invoices.payment AS payment,
+    t_m_s_service_invoices.chargesofdmonth AS charges_for_month,
+    t_m_s_service_invoices.begin_balance + t_m_s_service_invoices.chargesofdmonth - t_m_s_service_invoices.payment AS amount_due,
+    0 AS vatable_sales,
+    0 AS vat_exempt_sales,
+    0 AS vat_zero_rated_sales,
+    t_m_s_service_invoices.vat AS vat_amount,
+    0 AS subtotal,
+    CONCAT("migrated", MD5(t_m_s_service_invoices.id)) AS `hash`,
+    t_m_s_service_invoices.preparedby AS prepared_by,
+    t_m_s_service_invoices.checkedby AS checked_by,
+    t_m_s_service_invoices.approvedby AS noted_by,
+    CASE
+        WHEN t_m_s_service_invoices.canceled = 0 THEN 1
+        ELSE 0
+    END AS `status`,
+    t_m_s_service_invoices.datecreated AS posted_at,
+    1 AS updated_by,
+    1 AS created_by,
+    '1990-01-01 12:00:00' AS updated_at,
+    '1990-01-01 12:00:00' AS created_at
+FROM
+    soafile AS t_m_s_service_invoices;
 
 SELECT
     t_m_s_service_invoice_charges.id,
@@ -168,7 +208,32 @@ FROM
 WHERE
     NOT t_m_s_service_invoice_charges.sn IN ("", 0)
     AND t_m_s_service_invoice_charges.sn IS NOT NULL
-    AND NOT t_m_s_service_invoice_charges.amt = 0;
+    AND NOT t_m_s_service_invoice_charges.amt = 0
+UNION
+ALL
+SELECT
+    t_m_s_service_invoice_charges.id + 614916 + 49544 + 316687,
+    t_m_s_service_invoice_charges.soaid + 132088 AS t_m_s_service_invoice_id,
+    "TODO" AS ewt_code,
+    "" AS award_notice_no,
+    '1990-01-01 12:00:00' AS posting_date,
+    0 AS charge_id,
+    "TODO" AS charge_type,
+    "TODO" AS charge_code,
+    t_m_s_service_invoice_charges.chargedesc AS charge_description,
+    t_m_s_service_invoice_charges.amt AS amount,
+    "TODO" AS non_vatable,
+    1 AS is_dmcm,
+    "SOAEXTFILE" AS `hash`,
+    0 AS priority_order,
+    1 AS updated_by,
+    1 AS created_by,
+    '1990-01-01 12:00:00' AS updated_at,
+    '1990-01-01 12:00:00' AS created_at
+FROM
+    soaextfile AS t_m_s_service_invoice_charges
+WHERE
+    NOT t_m_s_service_invoice_charges.amt = 0;
 
 SELECT
     t_m_s_debit_credit_memos.id AS id,
@@ -243,7 +308,16 @@ FROM
 WHERE
     sn IS NOT NULL
     AND NOT sn = ""
-    AND NOT sn = 0;
+    AND NOT sn = 0
+UNION ALL
+SELECT
+    id + 132088 AS id,
+    soano
+FROM
+    soafile AS sn_map_qav
+WHERE
+    soano IS NOT NULL
+    AND NOT canceled = 1;
 
 SELECT
     t_m_s_service_invoice_payments.id AS id,

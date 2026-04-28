@@ -1,5 +1,5 @@
 SELECT
-    t_m_s_service_invoices.id + 132088 AS id,
+    t_m_s_service_invoices.id + 132088 + 17422 AS id,
     t_m_s_service_invoices.sn AS service_invoice_no,
     CASE
         WHEN t_m_s_service_invoices.snt = 2 THEN "regular"
@@ -70,7 +70,7 @@ SELECT
     "" AS subtotal,
     CONCAT(
         "migrated",
-        MD5(t_m_s_service_invoices.id + 132088)
+        MD5(t_m_s_service_invoices.id + 132088 + 17422)
     ) AS `hash`,
     t_m_s_service_invoices.pby AS prepared_by,
     t_m_s_service_invoices.cby AS checked_by,
@@ -94,7 +94,7 @@ FROM
     AND NOT t_m_s_service_invoices.tc = "";
 
 SELECT
-    t_m_s_service_invoice_charges.id + 614916 + 49544 + 316687,
+    t_m_s_service_invoice_charges.id + 614916 + 49544 + 316687 + 16289,
     t_m_s_service_invoice_charges.sn AS t_m_s_service_invoice_id,
     "TODO" AS ewt_code,
     t_m_s_service_invoice_charges.tc AS award_notice_no,
@@ -121,7 +121,7 @@ WHERE
 UNION
 ALL
 SELECT
-    t_m_s_service_invoice_charges.id + 614916 + 49544 + 316687 + 343742,
+    t_m_s_service_invoice_charges.id + 614916 + 49544 + 316687 + 16289 + 343742,
     t_m_s_service_invoice_charges.sn AS t_m_s_service_invoice_id,
     "TODO" AS ewt_code,
     t_m_s_service_invoice_charges.tc AS award_notice_no,
@@ -148,7 +148,7 @@ WHERE
 UNION
 ALL
 SELECT
-    t_m_s_service_invoice_charges.id + 614916 + 49544 + 316687 + 343742 + 24447,
+    t_m_s_service_invoice_charges.id + 614916 + 49544 + 316687 + 16289 + 343742 + 24447,
     t_m_s_service_invoice_charges.sn AS t_m_s_service_invoice_id,
     "TODO" AS ewt_code,
     t_m_s_service_invoice_charges.tc AS award_notice_no,

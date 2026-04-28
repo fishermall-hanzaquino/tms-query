@@ -16,7 +16,7 @@ SELECT
     CASE
         WHEN locdsc LIKE '%mlb%' THEN 1
         ELSE 2
-    END AS branch
+    END AS mall_id
 FROM locationfile AS e_b_m_locations;
 
 // main module
@@ -29,7 +29,7 @@ SELECT
     CASE
         WHEN e_b_m_events_epf_information.branchcde = 'BR000001' THEN 2
         ELSE 1
-    END AS mall_id, 
+    END AS branch, 
     e_b_m_events_epf_information.clienttype_id AS client_type,
     e_b_m_events_epf_information.epftype_id AS event_type,
     eventclassfile.eventclass as classification,
@@ -97,8 +97,6 @@ SELECT
     epf.event_type AS transaction_type,
     epf.title,
     epf.location,
-    epf.adv_rent,
-    epf.sec_dep,
     epf.request AS requests,
     epf.remarks,
     epf.recommendation AS recommendations,
@@ -122,8 +120,7 @@ SELECT
     CASE
         WHEN e_b_m_events_moa_information.cancelled = 1 THEN 20
         ELSE 30
-    END AS 'status',
-    e_b_m_events_moa_information.due_date AS duedate
+    END AS 'status'
 FROM moafile AS e_b_m_events_moa_information
 LEFT JOIN eventfile AS epf
     ON e_b_m_events_moa_information.epf_id = epf.id

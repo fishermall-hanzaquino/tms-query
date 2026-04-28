@@ -2,6 +2,7 @@ import pymysql
 import pymysql.cursors
 from collections import Counter
 import csv
+import pandas as pd
 
 DB_CONFIG = {
     "host": "localhost",
@@ -23,6 +24,13 @@ cursor.execute("SELECT * FROM t_m_s_charges WHERE document = %s", ("an"))
 # rental scheme
 
 t_m_s_charges = cursor.fetchall()
+
+
+cursor.execute("SELECT * FROM t_m_s_charges WHERE document = %s", ("moa"))
+
+# rental scheme
+
+t_m_s_charges_moa = cursor.fetchall()
 
 run_leasing = True
 
@@ -280,6 +288,7 @@ cursor.execute(
         t_m_s_service_invoice_charges.award_notice_no,
         t_m_s_service_invoice_charges.hash,
         t_m_s_service_invoice_charges.posting_date,
+        t_m_s_service_invoice_charges.t_m_s_service_invoice_id,
         t_m_s_service_invoice_charges.amount,
         (
             SELECT
@@ -349,29 +358,34 @@ for chrg in t_m_s_service_invoice_charges:
     chrg_description = str(chrg["charge_description"]).strip()
     chrg_award_notice_no = str(chrg["award_notice_no"]).strip()
     chrg_rentschemeid = chrg["rentalschemeid"]
+    chrg_soaid = str(chrg["t_m_s_service_invoice_id"])
     chrg_buss_category = chrg["buss_category"]
     chrg_posting_date = chrg["posting_date"]
     chrg_amount = chrg["amount"]
     chrg_sn = str(chrg["hash"]).strip()
 
     up_t_m_s_service_invoice_id = ""
-    chrg_mallid = 1
-    if "QAV" in str(chrg_award_notice_no).upper():
-        chrg_mallid = 2
-        up_t_m_s_service_invoice_id = lookup_qv.get(chrg_sn)
-        if (
-            up_t_m_s_service_invoice_id is not None
-            and up_t_m_s_service_invoice_id != ""
-        ):
-            up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id)
-    elif "MLB" in str(chrg_award_notice_no).upper():
+    if chrg_sn == "SOAEXTFILE":
+        up_t_m_s_service_invoice_id = chrg_soaid
+    else:
+        up_t_m_s_service_invoice_id = ""
         chrg_mallid = 1
-        up_t_m_s_service_invoice_id = lookup_mb.get(chrg_sn)
-        if (
-            up_t_m_s_service_invoice_id is not None
-            and up_t_m_s_service_invoice_id != ""
-        ):
-            up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id) + 132088
+        if "QAV" in str(chrg_award_notice_no).upper():
+            chrg_mallid = 2
+            up_t_m_s_service_invoice_id = lookup_qv.get(chrg_sn)
+            if (
+                up_t_m_s_service_invoice_id is not None
+                and up_t_m_s_service_invoice_id != ""
+            ):
+                up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id)
+        elif "MLB" in str(chrg_award_notice_no).upper():
+            chrg_mallid = 1
+            up_t_m_s_service_invoice_id = lookup_mb.get(chrg_sn)
+            if (
+                up_t_m_s_service_invoice_id is not None
+                and up_t_m_s_service_invoice_id != ""
+            ):
+                up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id) + 132088 + 17422
 
     if chrg_description == "" or chrg_description is None or chrg_rentschemeid is None:
         continue
@@ -475,17 +489,29 @@ for chrg in t_m_s_service_invoice_charges:
         else:
             chrg_description = "PEST CONTROL - NON-FOOD TENANT"
 
-    tms_charge = next(
-        (
-            row
-            for row in t_m_s_charges
-            if int(row["mall_id"]) == int(chrg_mallid)
-            and int(row["rental_scheme_id"]) == int(chrg_rentschemeid)
-            and str(row["description"]).strip().upper()
-            == str(chrg_description).strip().upper()
-        ),
-        None,
-    )
+    if chrg_sn == "SOAEXTFILE":
+        tms_charge = next(
+            (
+                row
+                for row in t_m_s_charges_moa
+                if int(row["mall_id"]) == int(chrg_mallid)
+                and str(row["description"]).strip().upper()
+                == str(chrg_description).strip().upper()
+            ),
+            None,
+        )
+    else:
+        tms_charge = next(
+            (
+                row
+                for row in t_m_s_charges
+                if int(row["mall_id"]) == int(chrg_mallid)
+                and int(row["rental_scheme_id"]) == int(chrg_rentschemeid)
+                and str(row["description"]).strip().upper()
+                == str(chrg_description).strip().upper()
+            ),
+            None,
+        )
 
     # t_m_s_service_invoice_id, ewt_code, charge_id, charge_type, charge_code, non_vatable, priority_order, id
     if tms_charge is not None or chrg_description == "TRANSFERRED PAYMENT" or chrg_description == "APPLICATION OF ADVANCE RENT":
@@ -605,7 +631,7 @@ for pmt in t_m_s_service_invoice_payments:
             up_t_m_s_service_invoice_id is not None
             and up_t_m_s_service_invoice_id != ""
         ):
-            up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id) + 132088
+            up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id) + 132088 + 17422
 
     if up_t_m_s_service_invoice_id != "":
         update3.append((up_t_m_s_service_invoice_id, pyt_id))
@@ -688,7 +714,7 @@ for orar in t_m_s_treasury:
             up_t_m_s_service_invoice_id is not None
             and up_t_m_s_service_invoice_id != ""
         ):
-            up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id) + 132088
+            up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id) + 132088 + 17422
 
     if up_t_m_s_service_invoice_id != "":
         update4.append((up_t_m_s_service_invoice_id, orar_id))
@@ -711,5 +737,66 @@ if run_treasury:
     conn.commit()
 
 
+try:
+    
+    cursor.execute("SET SQL_SAFE_UPDATES = 0;")
+    sql5 = """
+        UPDATE t_m_s_service_invoices AS si
+        LEFT JOIN e_b_m_events_moa_information AS moa ON moa.id = si.tin
+        LEFT JOIN e_b_m_locations AS loc ON loc.id = moa.location
+        SET 
+            si.award_notice_no = moa.moa_id, 
+            si.loc_code = COALESCE(loc.location_code, ""),
+            si.`status` = CASE
+                WHEN moa.moa_id IS NULL THEN 0
+                ELSE 1
+            END
+        WHERE si.customer_type = 'event' 
+        AND si.tin IS NOT NULL;
+    """
+    cursor.execute(sql5)
+    cursor.execute("SET SQL_SAFE_UPDATES = 1;")
+    
+    conn.commit()
+    print("Update successful")
+
+except Exception as e:
+    conn.rollback()
+    print("Error:", e)
 
 
+
+
+
+sheets = pd.read_excel("py\\ref\\location-tagging.xlsx", sheet_name=None)
+
+# access a specific sheet
+tms_qav_locations = sheets["TMS QAV"]
+tms_mlb_locations = sheets["TMS MLB"]
+ebm_qav_locations = sheets["EBM QAV"]
+ebm_mlb_locations = sheets["EBM MLB"]
+
+
+
+
+for index, row in tms_qav_locations.iterrows():
+    loccde = str(row.iloc[2])
+    clsification = str(row.iloc[4]) # mall - 1, foodhall - 2, parkway - 3
+    if clsification == "INACTIVE" or clsification == "":
+        continue
+
+    sql6 = "UPDATE locations SET location_type_id = %s WHERE locationcode = %s AND mallid = 2"
+   
+    cursor.execute(sql6, (clsification, loccde))
+    conn.commit()
+
+for index, row in tms_mlb_locations.iterrows():
+    loccde = str(row.iloc[3])
+    clsification = str(row.iloc[6]) # mall - 1, foodhall - 2, parkway - 3
+    if clsification == "INACTIVE" or clsification == "":
+        continue
+
+    sql7 = "UPDATE locations SET location_type_id = %s WHERE locationcode = %s AND mallid = 1"
+   
+    cursor.execute(sql7, (clsification, loccde))
+    conn.commit()
