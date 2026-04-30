@@ -63,11 +63,11 @@ SELECT
     t_m_s_service_invoices.payamt AS payment,
     t_m_s_service_invoices.chargeamt AS charges_for_month,
     t_m_s_service_invoices.beg + t_m_s_service_invoices.chargeamt + t_m_s_service_invoices.payamt AS amount_due,
-    "" AS vatable_sales,
-    "" AS vat_exempt_sales,
-    "" AS vat_zero_rated_sales,
-    "" AS vat_amount,
-    "" AS subtotal,
+    0 AS vatable_sales,
+    0 AS vat_exempt_sales,
+    0 AS vat_zero_rated_sales,
+    t_m_s_service_invoices.vat AS vat_amount,
+    (t_m_s_service_invoices.chargeamt-t_m_s_service_invoices.vat) AS subtotal,
     CONCAT(
         "migrated",
         MD5(t_m_s_service_invoices.id + 132088 + 17422)

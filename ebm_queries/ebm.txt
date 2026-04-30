@@ -35,7 +35,7 @@ LEFT JOIN moafile AS moa
 // epf
 
 SELECT
-    e_b_m_events_epf_information.id,
+    DISTINCT(e_b_m_events_epf_information.id),
     e_b_m_events_epf_information.eventcde AS epf_id,
     e_b_m_events_epf_information.dte_received AS loi,
     CASE
