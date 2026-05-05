@@ -216,7 +216,7 @@ FROM
 
 SELECT
     id + 1047 + 1411,
-    id + 1047 AS contracts_tmsawardnoticeid,
+    (SELECT id FROM clientofferfile WHERE clientofferfile.termsofleasecde = t_m_s_contracts.termsofleasecde LIMIT 1) + 1047 AS contracts_tmsawardnoticeid,
     '1' AS contracts_mallid,
     MD5(id + 1047 + 1411) AS contracts_hashid,
     termsofleasecde AS contracts_anno,
@@ -243,7 +243,7 @@ UNION
 ALL
 SELECT
     id + 1047 + 1411 + 926 AS id,
-    id + 1047 AS contracts_tmsawardnoticeid,
+    (SELECT id FROM clientofferfile WHERE clientofferfile.termsofleasecde = t_m_s_contracts.termsofleasecde LIMIT 1) + 1047 AS contracts_tmsawardnoticeid,
     '1' AS contracts_mallid,
     MD5(id + 1047 + 1411 + 926) AS contracts_hashid,
     termsofleasecde AS contracts_anno,
@@ -269,8 +269,8 @@ FROM
 
 SELECT
     t_m_s_a_n_rental_charges.id + 89476 AS id,
-    CASE
-        WHEN t_m_s_a_n_rental_charges.contract_renew = 1 THEN (
+    COALESCE(
+		(
             SELECT
                 id + 1047 + 1411 + 926
             FROM
@@ -281,10 +281,11 @@ SELECT
                 id DESC
             LIMIT
                 1
-        )
-        ELSE clientofferfile.id + 1047 + 1411
-    END AS tms_contract_id,
-    clientofferfile.id + 1047 AS awardnoticeid,
+        ),
+        (SELECT id FROM clientofferfile WHERE clientofferfile.termsofleasecde = t_m_s_a_n_rental_charges.termsofleasecde ORDER BY id DESC LIMIT 1) + 1047 + 1411
+    ) AS tms_contract_id,
+    (SELECT id FROM clientofferfile WHERE clientofferfile.termsofleasecde = t_m_s_a_n_rental_charges.termsofleasecde ORDER BY id DESC LIMIT 1) + 1047
+     AS awardnoticeid,
     CASE
         WHEN t_m_s_a_n_rental_charges.percentrent = 0 THEN 1
         WHEN t_m_s_a_n_rental_charges.percentrent > 0 THEN 3
@@ -313,8 +314,6 @@ SELECT
     '1990-01-01 12:00:00' AS updated_at
 FROM
     rentalchargesfile AS t_m_s_a_n_rental_charges
-    LEFT JOIN clientofferfile ON t_m_s_a_n_rental_charges.transcde = clientofferfile.offercde
-    AND t_m_s_a_n_rental_charges.termsofleasecde = clientofferfile.termsofleasecde
 ORDER BY
     t_m_s_a_n_rental_charges.id;
 

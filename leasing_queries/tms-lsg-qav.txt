@@ -218,7 +218,7 @@ FROM
 
 SELECT
     id,
-    id AS contracts_tmsawardnoticeid,
+    (SELECT id FROM clientofferfile WHERE clientofferfile.termsofleasecde = t_m_s_contracts.termsofleasecde LIMIT 1) AS contracts_tmsawardnoticeid,
     '2' AS contracts_mallid,
     MD5(id) AS contracts_hashid,
     termsofleasecde AS contracts_anno,
@@ -245,7 +245,7 @@ UNION
 ALL
 SELECT
     id + 1047 AS id,
-    id AS contracts_tmsawardnoticeid,
+    (SELECT id FROM clientofferfile WHERE clientofferfile.termsofleasecde = t_m_s_contracts.termsofleasecde LIMIT 1) AS contracts_tmsawardnoticeid,
     '2' AS contracts_mallid,
     MD5(id + 1047) AS contracts_hashid,
     termsofleasecde AS contracts_anno,
@@ -271,8 +271,8 @@ FROM
 
 SELECT
     t_m_s_a_n_rental_charges.id,
-    CASE
-        WHEN t_m_s_a_n_rental_charges.contract_renew = 1 THEN (
+    COALESCE(
+		(
             SELECT
                 id + 1047
             FROM
@@ -283,10 +283,11 @@ SELECT
                 id DESC
             LIMIT
                 1
-        )
-        ELSE clientofferfile.id
-    END AS tms_contract_id,
-    clientofferfile.id AS awardnoticeid,
+        ),
+        (SELECT id FROM clientofferfile WHERE clientofferfile.termsofleasecde = t_m_s_a_n_rental_charges.termsofleasecde ORDER BY id DESC LIMIT 1)
+    ) AS tms_contract_id,
+    (SELECT id FROM clientofferfile WHERE clientofferfile.termsofleasecde = t_m_s_a_n_rental_charges.termsofleasecde ORDER BY id DESC LIMIT 1)
+     AS awardnoticeid,
     CASE
         WHEN t_m_s_a_n_rental_charges.percentrent = 0 THEN 2
         WHEN t_m_s_a_n_rental_charges.percentrent > 0 THEN 4
@@ -315,8 +316,6 @@ SELECT
     '1990-01-01 12:00:00' AS updated_at
 FROM
     rentalchargesfile AS t_m_s_a_n_rental_charges
-    LEFT JOIN clientofferfile ON t_m_s_a_n_rental_charges.transcde = clientofferfile.offercde
-    AND t_m_s_a_n_rental_charges.termsofleasecde = clientofferfile.termsofleasecde
 ORDER BY
     t_m_s_a_n_rental_charges.id;
 
