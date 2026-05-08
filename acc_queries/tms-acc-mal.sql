@@ -1,5 +1,5 @@
 SELECT
-    t_m_s_service_invoices.id + 132088 + 17422 AS id,
+    t_m_s_service_invoices.id + 136688 + 18026 AS id,
     t_m_s_service_invoices.sn AS service_invoice_no,
     CASE
         WHEN t_m_s_service_invoices.snt = 2 THEN "regular"
@@ -70,7 +70,7 @@ SELECT
     (t_m_s_service_invoices.chargeamt-t_m_s_service_invoices.vat) AS subtotal,
     CONCAT(
         "migrated",
-        MD5(t_m_s_service_invoices.id + 132088 + 17422)
+        MD5(t_m_s_service_invoices.id + 136688 + 18026)
     ) AS `hash`,
     t_m_s_service_invoices.pby AS prepared_by,
     t_m_s_service_invoices.cby AS checked_by,
@@ -94,7 +94,7 @@ FROM
     AND NOT t_m_s_service_invoices.tc = "";
 
 SELECT
-    t_m_s_service_invoice_charges.id + 614916 + 49544 + 316687 + 16289,
+    t_m_s_service_invoice_charges.id + 638678 + 50275 + 316963 + 16805,
     t_m_s_service_invoice_charges.sn AS t_m_s_service_invoice_id,
     "TODO" AS ewt_code,
     t_m_s_service_invoice_charges.tc AS award_notice_no,
@@ -121,7 +121,7 @@ WHERE
 UNION
 ALL
 SELECT
-    t_m_s_service_invoice_charges.id + 614916 + 49544 + 316687 + 16289 + 343742,
+    t_m_s_service_invoice_charges.id + 638678 + 50275 + 316963 + 16805 + 358625,
     t_m_s_service_invoice_charges.sn AS t_m_s_service_invoice_id,
     "TODO" AS ewt_code,
     t_m_s_service_invoice_charges.tc AS award_notice_no,
@@ -148,7 +148,7 @@ WHERE
 UNION
 ALL
 SELECT
-    t_m_s_service_invoice_charges.id + 614916 + 49544 + 316687 + 16289 + 343742 + 24447,
+    t_m_s_service_invoice_charges.id + 638678 + 50275 + 316963 + 16805 + 358625 + 24850,
     t_m_s_service_invoice_charges.sn AS t_m_s_service_invoice_id,
     "TODO" AS ewt_code,
     t_m_s_service_invoice_charges.tc AS award_notice_no,
@@ -174,11 +174,11 @@ WHERE
     AND NOT t_m_s_service_invoice_charges.amt = 0;
 
 SELECT
-    t_m_s_debit_credit_memos.id + 49544 + 316687 AS id,
+    t_m_s_debit_credit_memos.id + 50275 + 316963 AS id,
     CONCAT(
         t_m_s_debit_credit_memos.bsn,
         "-DMCM-",
-        t_m_s_debit_credit_memos.id + 49544 + 316687
+        t_m_s_debit_credit_memos.id + 50275 + 316963
     ) AS dmcm_id,
     CASE
         WHEN t_m_s_debit_credit_memos.snt = 2 THEN "regular"
@@ -207,11 +207,11 @@ WHERE
 UNION
 ALL
 SELECT
-    t_m_s_debit_credit_memos.id + 49544 + 316687 + 24447 AS id,
+    t_m_s_debit_credit_memos.id + 50275 + 316963 + 24850 AS id,
     CONCAT(
         t_m_s_debit_credit_memos.bsn,
         "-DMCM-",
-        t_m_s_debit_credit_memos.id + 49544 + 316687 + 24447
+        t_m_s_debit_credit_memos.id + 50275 + 316963 + 24850
     ) AS dmcm_id,
     CASE
         WHEN t_m_s_debit_credit_memos.snt = 2 THEN "regular"
@@ -249,7 +249,7 @@ WHERE
     AND NOT sn = 0;
 
 SELECT
-    t_m_s_service_invoice_payments.id + 30132 + 48863 AS id,
+    t_m_s_service_invoice_payments.id + 30849 + 50328 AS id,
     0 AS t_m_s_service_invoice_id,
     t_m_s_service_invoice_payments.tc AS award_notice_no,
     t_m_s_service_invoice_payments.odt AS posting_date,
@@ -278,11 +278,11 @@ WHERE
 UNION
 ALL
 SELECT
-    t_m_s_service_invoice_payments.id + 30132 + 48863 + 16035 AS id,
+    t_m_s_service_invoice_payments.id + 30849 + 50328 + 16499 AS id,
     0 AS t_m_s_service_invoice_id,
     t_m_s_service_invoice_payments.tc AS award_notice_no,
     t_m_s_service_invoice_payments.ewtdt AS posting_date,
-    CONCAT("EWT",t_m_s_service_invoice_payments.id + 30132 + 48863 + 16035) AS reference_no,
+    CONCAT("EWT",t_m_s_service_invoice_payments.id + 30849 + 50328 + 16499) AS reference_no,
     CONCAT("EWT (", t_m_s_service_invoice_payments.ewtdt1, "-", t_m_s_service_invoice_payments.ewtdt2, ")") AS payment_description,
     -COALESCE(
         t_m_s_service_invoice_payments.amt,
@@ -314,7 +314,7 @@ WHERE
 
 
 SELECT 
-    t_m_s_treasuries.id + 30132 + 48863 AS id,
+    t_m_s_treasuries.id + 30849 + 50328 AS id,
     CONCAT('TRSY-CR0-', t_m_s_treasuries.id) AS payment_id,
     0 AS service_invoice_id,
     t_m_s_treasuries.odt AS transaction_date,
@@ -364,7 +364,7 @@ WHERE
         AND t_m_s_treasuries.del_dt IS NULL
         AND t_m_s_treasuries.cancel_dt IS NULL 
 UNION ALL SELECT 
-    t_m_s_treasuries.id + 30132 + 48863 + 16035 AS id,
+    t_m_s_treasuries.id + 30849 + 50328 + 16499 AS id,
     CONCAT('TRSY-CR0-', t_m_s_treasuries.id) AS payment_id,
     (SELECT 
             id
@@ -378,7 +378,7 @@ UNION ALL SELECT
     t_m_s_treasuries.sdt2 AS transaction_date,
     t_m_s_treasuries.sdt2 AS receipt_date,
     '' AS payment_type,
-    CONCAT('EWT', t_m_s_treasuries.id + 30132) AS reference_no,
+    CONCAT('EWT', t_m_s_treasuries.id + 30849) AS reference_no,
     '' AS check_no,
     '' AS check_date,
     '' AS check_bank,

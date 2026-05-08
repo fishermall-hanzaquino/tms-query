@@ -2,8 +2,8 @@ import os
 import csv
 import re
 
-init_file = "init_ref_qav.csv"
-new_file = "generated_exports\\db_tms_last_ids_per_table.csv"
+init_file = "init_ref_mlb.csv"
+new_file = "generated_exports\\db_tms_mlb_last_ids_per_table.csv"
 
 init_ids = {}
 new_ids = {}
