@@ -106,7 +106,7 @@ SELECT
     t_m_s_service_invoices.tol_moa_id AS loc_code,
     t_m_s_service_invoices.tol_moa_id AS total_area,
     t_m_s_service_invoices.begin_balance AS beginning_balance,
-    t_m_s_service_invoices.payment AS payment,
+    -t_m_s_service_invoices.payment AS payment,
     t_m_s_service_invoices.chargesofdmonth AS charges_for_month,
     t_m_s_service_invoices.begin_balance + t_m_s_service_invoices.chargesofdmonth - t_m_s_service_invoices.payment AS amount_due,
     0 AS vatable_sales,

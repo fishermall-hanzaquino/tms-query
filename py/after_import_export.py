@@ -39,6 +39,9 @@ run_accounting = True
 
 run_treasury = True
 
+run_ops = True
+
+
 
 isFood = {
     "Affiliate": False,
@@ -500,6 +503,11 @@ if run_accounting:
             chrg_description = "AIR CONDITION"
 
         if (
+            chrg_description == "SECURITY POSTING (PER HOUR)"
+        ):
+            chrg_description = "SECURITY POSTING ( PER HOUR)"
+
+        if (
             chrg_description == "PEST CONTROL"
             or chrg_description == "PEST CONTROL (DS)"
             or chrg_description == "PEST CONTROL - BIR MALABON"
@@ -772,6 +780,116 @@ if run_treasury:
     cursor.executemany(sql4, update4)
     conn.commit()
 
+
+################################## OPERATIONS POST MIGRATION SCRIPT ##################################
+if run_ops:
+    cursor.execute(
+        """
+        SELECT 
+                t_m_s_service_charges_x_records.id,
+                t_m_s_service_charges_x_records.service,
+                CASE
+                    WHEN t_m_s_service_charges_x_records.sc_no LIKE "%QAV%" THEN 2
+                    ELSE 1
+                END AS mall_id,
+                COALESCE(
+                    (SELECT 
+                        rentalschemeid
+                    FROM
+                        t_m_s_a_n_rental_charges
+                            LEFT JOIN
+                        t_m_s_award_notices ON t_m_s_award_notices.id = t_m_s_a_n_rental_charges.awardnoticeid
+                    WHERE
+                        t_m_s_award_notices.anno = t_m_s_service_charges.awardnotice_no
+                            AND CURDATE() BETWEEN t_m_s_a_n_rental_charges.fromdate AND t_m_s_a_n_rental_charges.todate
+                    ORDER BY t_m_s_a_n_rental_charges.id DESC
+                    LIMIT 1),
+                    (SELECT 
+                            rentalschemeid
+                        FROM
+                            t_m_s_a_n_rental_charges
+                                LEFT JOIN
+                            t_m_s_award_notices ON t_m_s_award_notices.id = t_m_s_a_n_rental_charges.awardnoticeid
+                        WHERE
+                            t_m_s_award_notices.anno = t_m_s_service_charges.awardnotice_no
+                        ORDER BY t_m_s_a_n_rental_charges.id DESC
+                        LIMIT 1)
+                ) AS rentalschemeid
+            FROM 
+                t_m_s_service_charges_x_records
+                LEFT JOIN t_m_s_service_charges ON t_m_s_service_charges.sc_no = t_m_s_service_charges_x_records.sc_no
+        """
+    )
+
+
+    t_m_s_service_charges_x_records = cursor.fetchall()
+
+    update5 = []
+    ignore5 = []
+
+    for sc in t_m_s_service_charges_x_records:
+        sc_id = sc["id"]
+        sc_description = str(sc["service"]).strip()
+        sc_rentschemeid = sc["rentalschemeid"]
+        sc_mallid = sc["mall_id"]
+
+        if sc_description == "" or sc_description is None or sc_rentschemeid is None or sc_description.isdigit():
+            continue
+
+        if (sc_description == "NEW SECURITY POSTING (3 HOURS)"):
+            sc_description = "SECURITY POSTING (3 HOURS)"
+
+        if (sc_description == "NEW SECURITY POSTING (PER HOUR)"):
+            sc_description = "SECURITY POSTING (PER HOUR)"
+
+        if (sc_description == "NEW ENGINEERING POSTING"):
+            sc_description = "ENGINEERING POSTING"
+
+        if (sc_description == "SECURITY POSTING (PER HOUR)"):
+            sc_description = "SECURITY POSTING ( PER HOUR)"
+
+
+        tms_charge = next(
+            (
+                row
+                for row in t_m_s_charges
+                if int(row["mall_id"]) == int(sc_mallid)
+                and int(row["rental_scheme_id"]) == int(sc_rentschemeid)
+                and str(row["description"]).strip().upper()
+                == str(sc_description).strip().upper()
+            ),
+            None,
+        )
+
+        if tms_charge is not None:
+            update5.append(
+                (
+                    tms_charge["id"],
+                    sc_id,
+                )
+            )
+
+        else:
+            ignore5.append(sc_description)
+
+    counts5 = Counter(ignore5)
+    print("SC Unique values:", list(counts5.keys()))
+    print("SC Total items:", len(ignore5))
+    print("\nSC Counts:")
+
+    for value, count in counts5.most_common():
+        print(f"{value}: {count}")
+
+    sql5 = """
+        UPDATE t_m_s_service_charges_x_records
+        SET 
+            service = %s
+        WHERE id = %s
+    """
+    # note: order must match query (value first, then id)
+
+    cursor.executemany(sql5, update5)
+    conn.commit()
 
 
 

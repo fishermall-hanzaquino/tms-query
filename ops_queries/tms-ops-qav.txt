@@ -193,3 +193,164 @@ SELECT
     '1990-01-01 12:00:00' AS updated_at
 FROM
     meterfile AS t_m_s_tenant_profile_x_meters;
+
+SELECT
+t_m_s_service_charges.id AS id,
+t_m_s_service_charges.otherservicecde AS sc_no,
+t_m_s_service_charges.termsofleasecde AS awardnotice_no,
+CASE
+    WHEN posted = 1 and cancelled = 0 THEN 20
+    ELSE 0
+END AS `status`,
+1 AS created_by,
+1 AS updated_by,
+t_m_s_service_charges.postdte AS posted_at,
+"" AS cancelled_at,
+1 AS prepared_by,
+1 AS noted_by,
+1 AS conformed_by,
+'1990-01-01 12:00:00' AS created_at,
+'1990-01-01 12:00:00' AS updated_at
+FROM
+otherservicefile AS t_m_s_service_charges;
+
+SELECT 
+t_m_s_service_charges_x_records.id AS id,
+t_m_s_service_charges_x_records.otherservicecde AS sc_no,
+t_m_s_service_charges_x_records.oscharges AS service,
+t_m_s_service_charges_x_records.osdtefr AS date_from,
+t_m_s_service_charges_x_records.osdteto AS date_to,
+t_m_s_service_charges_x_records.ostimefr AS time_from,
+t_m_s_service_charges_x_records.ostimeto AS time_to,
+t_m_s_service_charges_x_records.rateperunit AS rate,
+t_m_s_service_charges_x_records.quantity AS qty,
+t_m_s_service_charges_x_records.descofworkrpr AS remarks,
+t_m_s_service_charges_x_records.ostotal AS total,
+10 AS `status`,
+1 AS created_by,
+"" AS removed_by,
+'1990-01-01 12:00:00' AS created_at,
+'1990-01-01 12:00:00' AS updated_at
+FROM
+chargestagfile AS t_m_s_service_charges_x_records;
+
+SELECT
+	t_m_s_meter_readings.id AS id,
+	DATE_FORMAT(t_m_s_meter_readings.billperiodto, '%M %Y') AS billing_period,
+	2 AS mall_id,
+	0 AS charge_type,
+	0 AS completion,
+	0 AS completion_total,
+	1 AS posted_by,
+	t_m_s_meter_readings.billperiodto AS posted_at,
+	t_m_s_meter_readings.periodcoverfr AS covered_from,
+	t_m_s_meter_readings.periodcoverto AS covered_to,
+	t_m_s_meter_readings.posted * 10 AS `status`,
+	0 AS electricity,
+	0 AS electricity_total,
+	0 AS water,
+	0 AS water_total,
+	0 AS lpg,
+	0 AS lpg_total,
+	0 AS chilled_water,
+	0 AS chilled_water_total,
+	0 AS electricity_hypo,
+	0 AS electricity_hypo_total,
+	'1990-01-01 12:00:00' AS created_at,
+	'1990-01-01 12:00:00' AS updated_at
+FROM meterreadingfile AS t_m_s_meter_readings;
+
+SELECT
+    t_m_s_meter_reading_x_electricals.id AS id,
+    DATE_FORMAT(t_m_s_meter_reading_x_electricals.billperiodto, '%M %Y') AS billing_period,
+    (
+        SELECT id FROM meterreadingfile
+        WHERE meterreadingfile.meterreadingcde = t_m_s_meter_reading_x_electricals.meterreadingcde
+        LIMIT 1
+    ) AS billing_period_id,
+    t_m_s_meter_reading_x_electricals.termsofleasecde AS awardnotice_no,
+    t_m_s_meter_reading_x_electricals.metercde AS meter_id,
+    t_m_s_meter_reading_x_electricals.prevread AS previous_reading,
+    t_m_s_meter_reading_x_electricals.currread AS current_reading,
+    10 AS status,
+    1 AS updated_by,
+    '1990-01-01 12:00:00' AS created_at,
+    '1990-01-01 12:00:00' AS updated_at
+FROM meterreadingexcelfile AS t_m_s_meter_reading_x_electricals
+WHERE t_m_s_meter_reading_x_electricals.meterctype = "ELECTRICITY";
+
+SELECT
+    t_m_s_meter_reading_x_waters.id AS id,
+    DATE_FORMAT(t_m_s_meter_reading_x_waters.billperiodto, '%M %Y') AS billing_period,
+    (
+        SELECT id FROM meterreadingfile
+        WHERE meterreadingfile.meterreadingcde = t_m_s_meter_reading_x_waters.meterreadingcde
+        LIMIT 1
+    ) AS billing_period_id,
+    t_m_s_meter_reading_x_waters.termsofleasecde AS awardnotice_no,
+    t_m_s_meter_reading_x_waters.metercde AS meter_id,
+    t_m_s_meter_reading_x_waters.prevread AS previous_reading,
+    t_m_s_meter_reading_x_waters.currread AS current_reading,
+    10 AS status,
+    1 AS updated_by,
+    '1990-01-01 12:00:00' AS created_at,
+    '1990-01-01 12:00:00' AS updated_at
+FROM meterreadingexcelfile AS t_m_s_meter_reading_x_waters
+WHERE t_m_s_meter_reading_x_waters.meterctype = "WATER";
+
+SELECT
+    t_m_s_meter_reading_x_chilled_waters.id AS id,
+    DATE_FORMAT(t_m_s_meter_reading_x_chilled_waters.billperiodto, '%M %Y') AS billing_period,
+    (
+        SELECT id FROM meterreadingfile
+        WHERE meterreadingfile.meterreadingcde = t_m_s_meter_reading_x_chilled_waters.meterreadingcde
+        LIMIT 1
+    ) AS billing_period_id,
+    t_m_s_meter_reading_x_chilled_waters.termsofleasecde AS awardnotice_no,
+    t_m_s_meter_reading_x_chilled_waters.metercde AS meter_id,
+    t_m_s_meter_reading_x_chilled_waters.prevread AS previous_reading,
+    t_m_s_meter_reading_x_chilled_waters.currread AS current_reading,
+    10 AS status,
+    1 AS updated_by,
+    '1990-01-01 12:00:00' AS created_at,
+    '1990-01-01 12:00:00' AS updated_at
+FROM meterreadingexcelfile AS t_m_s_meter_reading_x_chilled_waters
+WHERE t_m_s_meter_reading_x_chilled_waters.meterctype = "CHILLED WATER";
+
+SELECT
+    t_m_s_meter_reading_x_lpgs.id AS id,
+    DATE_FORMAT(t_m_s_meter_reading_x_lpgs.billperiodto, '%M %Y') AS billing_period,
+    (
+        SELECT id FROM meterreadingfile
+        WHERE meterreadingfile.meterreadingcde = t_m_s_meter_reading_x_lpgs.meterreadingcde
+        LIMIT 1
+    ) AS billing_period_id,
+    t_m_s_meter_reading_x_lpgs.termsofleasecde AS awardnotice_no,
+    t_m_s_meter_reading_x_lpgs.metercde AS meter_id,
+    t_m_s_meter_reading_x_lpgs.prevread AS previous_reading,
+    t_m_s_meter_reading_x_lpgs.currread AS current_reading,
+    10 AS status,
+    1 AS updated_by,
+    '1990-01-01 12:00:00' AS created_at,
+    '1990-01-01 12:00:00' AS updated_at
+FROM meterreadingexcelfile AS t_m_s_meter_reading_x_lpgs
+WHERE t_m_s_meter_reading_x_lpgs.meterctype = "LPG";
+
+SELECT
+    t_m_s_meter_reading_x_electrical_hypos.id AS id,
+    DATE_FORMAT(t_m_s_meter_reading_x_electrical_hypos.billperiodto, '%M %Y') AS billing_period,
+    (
+        SELECT id FROM meterreadingfile
+        WHERE meterreadingfile.meterreadingcde = t_m_s_meter_reading_x_electrical_hypos.meterreadingcde
+        LIMIT 1
+    ) AS billing_period_id,
+    t_m_s_meter_reading_x_electrical_hypos.termsofleasecde AS awardnotice_no,
+    t_m_s_meter_reading_x_electrical_hypos.metercde AS meter_id,
+    t_m_s_meter_reading_x_electrical_hypos.prevread AS previous_reading,
+    t_m_s_meter_reading_x_electrical_hypos.currread AS current_reading,
+    10 AS status,
+    1 AS updated_by,
+    '1990-01-01 12:00:00' AS created_at,
+    '1990-01-01 12:00:00' AS updated_at
+FROM meterreadingexcelfile AS t_m_s_meter_reading_x_electrical_hypos
+WHERE t_m_s_meter_reading_x_electrical_hypos.meterctype = "ELECTRICITY - HYPO";
