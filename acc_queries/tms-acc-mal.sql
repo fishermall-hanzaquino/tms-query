@@ -76,10 +76,7 @@ SELECT
     t_m_s_service_invoices.cby AS checked_by,
     t_m_s_service_invoices.aby AS noted_by,
     CASE
-        WHEN (
-            t_m_s_service_invoices.posted = 1
-            OR t_m_s_service_invoices.prnt = 1
-        )
+        WHEN t_m_s_service_invoices.sn <> 0
         AND t_m_s_service_invoices.stat = 1 THEN 1
         ELSE 0
     END AS `status`,
@@ -117,6 +114,7 @@ FROM
 WHERE
     NOT t_m_s_service_invoice_charges.sn IN ("", 0)
     AND t_m_s_service_invoice_charges.sn IS NOT NULL
+    AND t_m_s_service_invoice_charges.stat = 1
     AND NOT t_m_s_service_invoice_charges.total = 0
 UNION
 ALL
@@ -315,8 +313,8 @@ WHERE
 
 SELECT 
     t_m_s_treasuries.id + 30849 + 50328 AS id,
-    CONCAT('TRSY-CR0-', t_m_s_treasuries.id) AS payment_id,
-    0 AS service_invoice_id,
+    CONCAT('TRSY-CR0-', t_m_s_treasuries.id + 30849 + 50328) AS payment_id,
+    COALESCE((SELECT single_soa1.id FROM single_soa1 LEFT JOIN or2 ON single_soa1.sn = or2.sn WHERE or2.orn = t_m_s_treasuries.orn LIMIT 1), 0) + 136688 + 18026 AS service_invoice_id,
     t_m_s_treasuries.odt AS transaction_date,
     t_m_s_treasuries.odt AS receipt_date,
     '' AS payment_type,
@@ -340,13 +338,7 @@ SELECT
     '' AS location,
     t_m_s_treasuries.printby AS checked_by,
     t_m_s_treasuries.noted AS noted_by,
-    (SELECT 
-            sn
-        FROM
-            or2
-        WHERE
-            or2.orn = t_m_s_treasuries.orn
-        LIMIT 1) AS remarks,
+    "MIGRATED" AS remarks,
     30 AS `status`,
     10 AS print_status,
     1 AS mall_id,

@@ -723,62 +723,62 @@ if run_accounting:
     conn.commit()
 
 ################################## TREASURY POST MIGRATION SCRIPT ##################################
-if run_treasury:
-    cursor.execute(
-        """
-        SELECT 
-            t_m_s_treasuries.id,
-            t_m_s_treasuries.mall_id,
-            t_m_s_treasuries.remarks
-        FROM
-            t_m_s_treasuries
-        """
-    )
+# if run_treasury:
+#     cursor.execute(
+#         """
+#         SELECT 
+#             t_m_s_treasuries.id,
+#             t_m_s_treasuries.mall_id,
+#             t_m_s_treasuries.remarks
+#         FROM
+#             t_m_s_treasuries
+#         """
+#     )
 
-    t_m_s_treasury = cursor.fetchall()
-    update4 = []
-    ignore4 = []
+#     t_m_s_treasury = cursor.fetchall()
+#     update4 = []
+#     ignore4 = []
 
-    for orar in t_m_s_treasury:
-        orar_id = orar["id"]
-        orar_sn = str(orar["remarks"]).strip()
-        orar_mall_id = str(orar["mall_id"]).strip()
+#     for orar in t_m_s_treasury:
+#         orar_id = orar["id"]
+#         orar_sn = str(orar["remarks"]).strip()
+#         orar_mall_id = str(orar["mall_id"]).strip()
 
-        up_t_m_s_service_invoice_id = ""
-        if int(orar_mall_id) == 2:
-            up_t_m_s_service_invoice_id = lookup_qv.get(orar_sn)
-            if (
-                up_t_m_s_service_invoice_id is not None
-                and up_t_m_s_service_invoice_id != ""
-            ):
-                up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id)
-        elif int(orar_mall_id) == 1:
-            up_t_m_s_service_invoice_id = lookup_mb.get(orar_sn)
-            if (
-                up_t_m_s_service_invoice_id is not None
-                and up_t_m_s_service_invoice_id != ""
-            ):
-                up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id) + 132088 + 17422
+#         up_t_m_s_service_invoice_id = ""
+#         if int(orar_mall_id) == 2:
+#             up_t_m_s_service_invoice_id = lookup_qv.get(orar_sn)
+#             if (
+#                 up_t_m_s_service_invoice_id is not None
+#                 and up_t_m_s_service_invoice_id != ""
+#             ):
+#                 up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id)
+#         elif int(orar_mall_id) == 1:
+#             up_t_m_s_service_invoice_id = lookup_mb.get(orar_sn)
+#             if (
+#                 up_t_m_s_service_invoice_id is not None
+#                 and up_t_m_s_service_invoice_id != ""
+#             ):
+#                 up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id) + 132088 + 17422
 
-        if up_t_m_s_service_invoice_id != "":
-            update4.append((up_t_m_s_service_invoice_id, orar_id))
+#         if up_t_m_s_service_invoice_id != "":
+#             update4.append((up_t_m_s_service_invoice_id, orar_id))
 
-        else:
-            ignore4.append(orar_id)
+#         else:
+#             ignore4.append(orar_id)
 
-    print(len(ignore4))
+#     print(len(ignore4))
 
-    sql4 = """
-        UPDATE t_m_s_treasuries
-        SET 
-            service_invoice_id = %s
-        WHERE id = %s AND service_invoice_id = 0
-    """
-    # note: order must match query (value first, then id)
+#     sql4 = """
+#         UPDATE t_m_s_treasuries
+#         SET 
+#             service_invoice_id = %s
+#         WHERE id = %s AND service_invoice_id = 0
+#     """
+#     # note: order must match query (value first, then id)
 
 
-    cursor.executemany(sql4, update4)
-    conn.commit()
+#     cursor.executemany(sql4, update4)
+#     conn.commit()
 
 
 ################################## OPERATIONS POST MIGRATION SCRIPT ##################################

@@ -364,3 +364,24 @@ WHERE
 ORDER BY
     t_m_s_a_n_other_charges.id;
 
+// leasing authorize signatory
+SELECT
+    MIN(t_m_s_authorized_signatories.id) + 8353 AS id,
+    COALESCE(
+        (SELECT id FROM clientofferfile WHERE clientofferfile.termsofleasecde = t_m_s_authorized_signatories.transcde LIMIT 1),
+        (SELECT id FROM clientofferfile WHERE clientofferfile.offercde = t_m_s_authorized_signatories.transcde LIMIT 1),
+        (SELECT id FROM clientofferfile WHERE clientofferfile.contractcde = t_m_s_authorized_signatories.transcde LIMIT 1),
+        (SELECT id FROM clientofferfile WHERE clientofferfile.loccde = t_m_s_authorized_signatories.transcde LIMIT 1)
+    ) AS tmsawardnoticeid,
+    t_m_s_authorized_signatories.repnme AS NAME,
+    MIN(t_m_s_authorized_signatories.repposition) AS designation,
+    MIN(
+        CASE
+            WHEN t_m_s_authorized_signatories.cancelled = 1 THEN 20
+            ELSE 10
+        END
+    ) AS STATUS
+FROM representativefile AS t_m_s_authorized_signatories
+GROUP BY
+    tmsawardnoticeid,
+    t_m_s_authorized_signatories.repnme;

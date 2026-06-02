@@ -226,7 +226,6 @@ SELECT
     contractcde AS contracts_contractid,
     10 AS contracts_status,
     CASE
-        WHEN leasepostdte IS NULL THEN 10
         WHEN leasepostdte IS NOT NULL
         AND contractcde <> ''
         AND termsofleasecde IS NOT NULL
@@ -235,6 +234,7 @@ SELECT
         AND CURRENT_DATE BETWEEN leasetermfrdte AND leasetermtodte
         AND terminatedte IS NULL THEN 20
         WHEN terminatedte IS NOT NULL THEN 30
+        WHEN leasepostdte IS NULL THEN 10
         ELSE 10
     END AS contracts_state,
     '1990-01-01 12:00:00' AS created_at,
@@ -253,7 +253,6 @@ SELECT
     contractrncde AS contracts_contractid,
     10 AS contracts_status,
     CASE
-        WHEN postdte IS NULL THEN 10
         WHEN postdte IS NOT NULL
         AND contractrncde <> ''
         AND termsofleasecde IS NOT NULL
@@ -262,6 +261,7 @@ SELECT
         AND CURRENT_DATE BETWEEN leasetermfrdte AND leasetermtodte
         AND terminatedte IS NULL THEN 20
         WHEN terminatedte IS NOT NULL THEN 30
+        WHEN postdte IS NULL THEN 10
         ELSE 10
     END AS contracts_state,
     '1990-01-01 12:00:00' AS created_at,
@@ -366,3 +366,24 @@ WHERE
 ORDER BY
     t_m_s_a_n_other_charges.id;
 
+// leasing authorize signatory
+SELECT
+    MIN(t_m_s_authorized_signatories.id) AS id,
+    COALESCE(
+        (SELECT id FROM clientofferfile WHERE clientofferfile.termsofleasecde = t_m_s_authorized_signatories.transcde LIMIT 1),
+        (SELECT id FROM clientofferfile WHERE clientofferfile.offercde = t_m_s_authorized_signatories.transcde LIMIT 1),
+        (SELECT id FROM clientofferfile WHERE clientofferfile.contractcde = t_m_s_authorized_signatories.transcde LIMIT 1),
+        (SELECT id FROM clientofferfile WHERE clientofferfile.loccde = t_m_s_authorized_signatories.transcde LIMIT 1)
+    ) AS tmsawardnoticeid,
+    t_m_s_authorized_signatories.repnme AS NAME,
+    MIN(t_m_s_authorized_signatories.repposition) AS designation,
+    MIN(
+        CASE
+            WHEN t_m_s_authorized_signatories.cancelled = 1 THEN 20
+            ELSE 10
+        END
+    ) AS STATUS
+FROM representativefile AS t_m_s_authorized_signatories
+GROUP BY
+    tmsawardnoticeid,
+    t_m_s_authorized_signatories.repnme;
