@@ -1,5 +1,5 @@
 SELECT 
-    id + 696,
+    id + 704,
     clientacctcde AS clientid,
     '1' AS mallid,
     tenantacctnme AS corporatename,
@@ -29,7 +29,7 @@ SELECT
 FROM businesscategoryfile AS t_m_s_business_categories;
 
 SELECT 
-    id + 677,
+    id + 680,
     loccde AS locationcode,
     flrlvl AS mallfloorlevelid,
     flrareain as interiorarea,
@@ -67,15 +67,15 @@ FROM tenanttypefile AS t_m_s_tenant_types;
 
 
 SELECT
-    t_m_s_award_notices.id + 1062,
-    t_m_s_award_notices.id + 1062 AS counter,
-    MD5(t_m_s_award_notices.id + 1062) AS hashid,
+    t_m_s_award_notices.id + 1073,
+    t_m_s_award_notices.id + 1073 AS counter,
+    MD5(t_m_s_award_notices.id + 1073) AS hashid,
     t_m_s_award_notices.termsofleasecde AS anno,
     1 AS mallid,
     t_m_s_award_notices.offerdte AS date,
     (
         SELECT
-            locationfile.id + 677
+            locationfile.id + 680
         FROM
             locationfile
         WHERE
@@ -103,7 +103,7 @@ SELECT
     ) AS establishmentname,
     (
         SELECT
-            tenantaccountfile.id + 696
+            tenantaccountfile.id + 704
         FROM
             tenantaccountfile
         WHERE
@@ -215,10 +215,10 @@ FROM
     clientofferfile AS t_m_s_award_notices;
 
 SELECT
-    id + 1062 + 1452,
-    (SELECT id FROM clientofferfile WHERE clientofferfile.termsofleasecde = t_m_s_contracts.termsofleasecde LIMIT 1) + 1062 AS contracts_tmsawardnoticeid,
+    id + 1073 + 1498,
+    (SELECT id FROM clientofferfile WHERE clientofferfile.termsofleasecde = t_m_s_contracts.termsofleasecde LIMIT 1) + 1073 AS contracts_tmsawardnoticeid,
     '1' AS contracts_mallid,
-    MD5(id + 1062 + 1452) AS contracts_hashid,
+    MD5(id + 1073 + 1498) AS contracts_hashid,
     termsofleasecde AS contracts_anno,
     1 AS contracts_counter,
     contractcde AS contracts_contractid,
@@ -242,10 +242,10 @@ FROM
 UNION
 ALL
 SELECT
-    id + 1062 + 1452 + 928 AS id,
-    (SELECT id FROM clientofferfile WHERE clientofferfile.termsofleasecde = t_m_s_contracts.termsofleasecde LIMIT 1) + 1062 AS contracts_tmsawardnoticeid,
+    id + 1073 + 1498 + 939 AS id,
+    (SELECT id FROM clientofferfile WHERE clientofferfile.termsofleasecde = t_m_s_contracts.termsofleasecde LIMIT 1) + 1073 AS contracts_tmsawardnoticeid,
     '1' AS contracts_mallid,
-    MD5(id + 1062 + 1452 + 928) AS contracts_hashid,
+    MD5(id + 1073 + 1498 + 939) AS contracts_hashid,
     termsofleasecde AS contracts_anno,
     1 AS contracts_counter,
     contractrncde AS contracts_contractid,
@@ -268,11 +268,11 @@ FROM
     contractrenewalfile AS t_m_s_contracts;
 
 SELECT
-    t_m_s_a_n_rental_charges.id + 89806 AS id,
+    t_m_s_a_n_rental_charges.id + 90136 AS id,
     COALESCE(
 		(
             SELECT
-                id + 1062 + 1452 + 928
+                id + 1073 + 1498 + 939
             FROM
                 contractrenewalfile
             WHERE
@@ -282,9 +282,9 @@ SELECT
             LIMIT
                 1
         ),
-        (SELECT id FROM clientofferfile WHERE clientofferfile.termsofleasecde = t_m_s_a_n_rental_charges.termsofleasecde ORDER BY id DESC LIMIT 1) + 1062 + 1452
+        (SELECT id FROM clientofferfile WHERE clientofferfile.termsofleasecde = t_m_s_a_n_rental_charges.termsofleasecde ORDER BY id DESC LIMIT 1) + 1073 + 1498
     ) AS tms_contract_id,
-    (SELECT id FROM clientofferfile WHERE clientofferfile.termsofleasecde = t_m_s_a_n_rental_charges.termsofleasecde ORDER BY id DESC LIMIT 1) + 1062
+    (SELECT id FROM clientofferfile WHERE clientofferfile.termsofleasecde = t_m_s_a_n_rental_charges.termsofleasecde ORDER BY id DESC LIMIT 1) + 1073
      AS awardnoticeid,
     CASE
         WHEN t_m_s_a_n_rental_charges.percentrent = 0 THEN 1
@@ -318,11 +318,11 @@ ORDER BY
     t_m_s_a_n_rental_charges.id;
 
 SELECT
-    t_m_s_a_n_other_charges.id + 81479 AS id,
+    t_m_s_a_n_other_charges.id + 82822 AS id,
     CASE
         WHEN t_m_s_a_n_other_charges.contract_renew = 1 THEN (
             SELECT
-                id + 1062 + 1452 + 928
+                id + 1073 + 1498 + 939
             FROM
                 contractrenewalfile
             WHERE
@@ -332,9 +332,9 @@ SELECT
             LIMIT
                 1
         )
-        ELSE clientofferfile.id + 1062 + 1452
+        ELSE clientofferfile.id + 1073 + 1498
     END AS tms_contract_id,
-    clientofferfile.id + 1062 AS tms_awardnotice_id,
+    clientofferfile.id + 1073 AS tms_awardnotice_id,
     0 AS applicable_charge_id,
     t_m_s_a_n_other_charges.rate,
     CASE
@@ -366,7 +366,7 @@ ORDER BY
 
 // leasing authorize signatory
 SELECT
-    MIN(t_m_s_authorized_signatories.id) + 8353 AS id,
+    MIN(t_m_s_authorized_signatories.id) + 8512 AS id,
     COALESCE(
         (SELECT id FROM clientofferfile WHERE clientofferfile.termsofleasecde = t_m_s_authorized_signatories.transcde LIMIT 1),
         (SELECT id FROM clientofferfile WHERE clientofferfile.offercde = t_m_s_authorized_signatories.transcde LIMIT 1),

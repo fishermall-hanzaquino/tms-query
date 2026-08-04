@@ -12,4 +12,28 @@ SET
 WHERE si.customer_type = 'event' 
 AND si.tin IS NOT NULL;
 SET SQL_SAFE_UPDATES = 1;
+ 
+DROP INDEX idx_service_main ON t_m_s_service_invoices;
+DROP INDEX idx_invoice_charges_main ON t_m_s_service_invoice_charges;
+DROP INDEX idx_rental_schemes ON t_m_s_rental_schemes;
+DROP INDEX idx_rental_charges ON t_m_s_a_n_rental_charges;
 
+CREATE INDEX idx_service_main 
+ON t_m_s_service_invoices (customer_type, status, award_notice_no, payment_due_date, statement_date, created_at);
+
+CREATE INDEX idx_invoice_charges_main
+ON t_m_s_service_invoice_charges 
+(t_m_s_service_invoice_id, award_notice_no, charge_id, created_at);
+
+CREATE INDEX idx_rental_schemes
+ON t_m_s_rental_schemes 
+(id);
+
+CREATE INDEX idx_rental_charges
+ON t_m_s_a_n_rental_charges 
+(id);
+
+SHOW INDEX FROM t_m_s_service_invoices;
+SHOW INDEX FROM t_m_s_service_invoice_charges;
+SHOW INDEX FROM t_m_s_rental_schemes;
+SHOW INDEX FROM t_m_s_a_n_rental_charges;

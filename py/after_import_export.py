@@ -417,7 +417,7 @@ if run_accounting:
                     up_t_m_s_service_invoice_id is not None
                     and up_t_m_s_service_invoice_id != ""
                 ):
-                    up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id) + 136688 + 18026
+                    up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id) + 140698 + 18499
 
         if chrg_description == "" or chrg_description is None or chrg_rentschemeid is None:
             continue
@@ -643,7 +643,8 @@ if run_accounting:
         SELECT 
             t_m_s_service_invoice_payments.id,
             t_m_s_service_invoice_payments.award_notice_no,
-            t_m_s_service_invoice_payments.hash
+            t_m_s_service_invoice_payments.hash,
+            t_m_s_service_invoice_payments.reference_no
         FROM
             t_m_s_service_invoice_payments
         """
@@ -659,31 +660,36 @@ if run_accounting:
         pyt_id = pmt["id"]
         pyt_sn = str(pmt["hash"]).strip()
         pyt_award_notice_no = str(pmt["award_notice_no"]).strip()
+        pyt_reference_no = str(pmt["reference_no"]).strip()
 
-        up_t_m_s_service_invoice_id = ""
-        pyt_mallid = 1
-        if "QAV" in str(pyt_award_notice_no).upper():
-            pyt_mallid = 2
-            up_t_m_s_service_invoice_id = lookup_qv.get(pyt_sn)
-            if (
-                up_t_m_s_service_invoice_id is not None
-                and up_t_m_s_service_invoice_id != ""
-            ):
-                up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id)
-        elif "MLB" in str(pyt_award_notice_no).upper():
-            pyt_mallid = 1
-            up_t_m_s_service_invoice_id = lookup_mb.get(pyt_sn)
-            if (
-                up_t_m_s_service_invoice_id is not None
-                and up_t_m_s_service_invoice_id != ""
-            ):
-                up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id) + 136688 + 18026
-
-        if up_t_m_s_service_invoice_id != "":
-            update3.append((up_t_m_s_service_invoice_id, pyt_id))
-
+        # Handle SEWT
+        if "EWT" in pyt_reference_no:
+            continue
         else:
-            ignore3.append(pyt_id)
+            up_t_m_s_service_invoice_id = ""
+            pyt_mallid = 1
+            if "QAV" in str(pyt_award_notice_no).upper():
+                pyt_mallid = 2
+                up_t_m_s_service_invoice_id = lookup_qv.get(pyt_sn)
+                if (
+                    up_t_m_s_service_invoice_id is not None
+                    and up_t_m_s_service_invoice_id != ""
+                ):
+                    up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id)
+            elif "MLB" in str(pyt_award_notice_no).upper():
+                pyt_mallid = 1
+                up_t_m_s_service_invoice_id = lookup_mb.get(pyt_sn)
+                if (
+                    up_t_m_s_service_invoice_id is not None
+                    and up_t_m_s_service_invoice_id != ""
+                ):
+                    up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id) + 140698 + 18499
+
+            if up_t_m_s_service_invoice_id != "":
+                update3.append((up_t_m_s_service_invoice_id, pyt_id))
+
+            else:
+                ignore3.append(pyt_id)
 
     print(len(ignore3))
 
@@ -758,7 +764,7 @@ if run_accounting:
 #                 up_t_m_s_service_invoice_id is not None
 #                 and up_t_m_s_service_invoice_id != ""
 #             ):
-#                 up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id) + 136688 + 18026
+#                 up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id) + 140698 + 18499
 
 #         if up_t_m_s_service_invoice_id != "":
 #             update4.append((up_t_m_s_service_invoice_id, orar_id))

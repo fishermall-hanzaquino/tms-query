@@ -51,7 +51,13 @@ for BRANCH in BRANCHES:
     """)
     award_notices = cursor.fetchall()
 
+    query_tenant = ["QAV-AN-000831"]
+
     for award_notice in award_notices:
+        if len(query_tenant) > 0:
+            if not award_notice["termsofleasecde"] in query_tenant:
+                continue
+
         cursor.execute("""
             SELECT
                 id,
@@ -61,10 +67,10 @@ for BRANCH in BRANCHES:
             WHERE posted = 1
             AND tc = %s
             AND bsn = %s
-            AND snt = %s          
+            AND snt = %s    
+            ORDER BY id ASC;      
         """, (award_notice["termsofleasecde"], BRANCH["bsn"], SI_TYPE))
         or1 = cursor.fetchall()
-
 
         cursor.execute("""
             SELECT
@@ -75,9 +81,26 @@ for BRANCH in BRANCHES:
             WHERE stat = 1
             AND tc = %s
             AND bsn = %s
-            AND snt = %s  
+            AND snt = %s
+            ORDER BY id ASC;
         """, (award_notice["termsofleasecde"], BRANCH["bsn"], SI_TYPE))
         single_soa1 = cursor.fetchall()
+
+
+        cursor.execute("""
+            SELECT
+                id,
+                amt
+            FROM
+                single_ewt
+            WHERE stat = 1
+            AND tc = %s
+            AND bsn = %s
+            AND snt = %s
+            ORDER BY id ASC;
+        """, (award_notice["termsofleasecde"], BRANCH["bsn"], SI_TYPE))
+        single_ewt = cursor.fetchall()
+
 
         gtotal_chrg = sum(
             si["chargeamt"] if si["chargeamt"] is not None else Decimal("0")
@@ -87,8 +110,14 @@ for BRANCH in BRANCHES:
             py["amt"] if py["amt"] is not None else Decimal("0")
             for py in or1
         )
+        gtotal_sewt = sum(
+            ewt["amt"] if ewt["amt"] is not None else Decimal("0")
+            for ewt in single_ewt
+        )
+    
 
-        print((gtotal_chrg-gtotal_pmt), award_notice["termsofleasecde"], gtotal_chrg, gtotal_pmt)
+        print(award_notice["termsofleasecde"], (gtotal_chrg-gtotal_pmt-gtotal_sewt),  
+              gtotal_chrg, gtotal_pmt, gtotal_sewt)
 
     # Iterate on all tenants required
     # Iterate on or1 linked to the tenant

@@ -244,10 +244,10 @@ FROM
 UNION
 ALL
 SELECT
-    id + 1062 AS id,
+    id + 1073 AS id,
     (SELECT id FROM clientofferfile WHERE clientofferfile.termsofleasecde = t_m_s_contracts.termsofleasecde LIMIT 1) AS contracts_tmsawardnoticeid,
     '2' AS contracts_mallid,
-    MD5(id + 1062) AS contracts_hashid,
+    MD5(id + 1073) AS contracts_hashid,
     termsofleasecde AS contracts_anno,
     1 AS contracts_counter,
     contractrncde AS contracts_contractid,
@@ -274,7 +274,7 @@ SELECT
     COALESCE(
 		(
             SELECT
-                id + 1062
+                id + 1073
             FROM
                 contractrenewalfile
             WHERE
@@ -324,7 +324,7 @@ SELECT
     CASE
         WHEN t_m_s_a_n_other_charges.contract_renew = 1 THEN (
             SELECT
-                id + 1062
+                id + 1073
             FROM
                 contractrenewalfile
             WHERE
