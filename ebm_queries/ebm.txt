@@ -34,7 +34,11 @@ SELECT
     moa.org_id AS organizer_id
 FROM representativefile AS e_b_m_authorized_signatories
 LEFT JOIN moafile AS moa
-    ON e_b_m_authorized_signatories.moa_id = moa.id;
+    ON e_b_m_authorized_signatories.moa_id = moa.id
+where not e_b_m_authorized_signatories.lessee_rep_position = ''
+and moa.org_id is not null
+group by trim(e_b_m_authorized_signatories.lessee_rep)
+order by name;
 
 // main module
 
@@ -104,7 +108,11 @@ SELECT
     e_b_m_events_rental_costs.rate AS fixed_rate,
     e_b_m_events_rental_costs.percent AS percentage,
     e_b_m_events_rental_costs.min_rate,
-    e_b_m_events_rental_costs.remarks
+    e_b_m_events_rental_costs.remarks,
+    CASE
+		when moa_id = 0 then 10
+        else 30
+	END as status
 FROM eventperiodcoveredfile AS e_b_m_events_rental_costs
 LEFT JOIN moafile AS moa
     ON e_b_m_events_rental_costs.moa_id = moa.id;
@@ -129,7 +137,7 @@ SELECT
         ELSE epf.org_id
     END AS client_id,
     epf.epftype_id AS event_type,
-    eventclassfile.eventclass as classification,
+    eventclassfile.eventclass AS classification,
     epf.event_type AS transaction_type,
     epf.title,
     epf.location,
@@ -140,26 +148,33 @@ SELECT
     e_b_m_events_moa_information.caterer AS caterer,
     e_b_m_events_moa_information.adv_rent_add AS adv_rent,
     CASE
-        WHEN e_b_m_events_moa_information.roll_over <> '' OR e_b_m_events_moa_information.roll_over IS NOT NULL THEN e_b_m_events_moa_information.roll_over
+        WHEN e_b_m_events_moa_information.roll_over <> '' AND e_b_m_events_moa_information.roll_over IS NOT NULL 
+            THEN e_b_m_events_moa_information.roll_over
         ELSE NULL
     END AS sec_dep_moa_id,
     CASE
         WHEN e_b_m_events_moa_information.sec_dep_add <> 0 THEN e_b_m_events_moa_information.roll_over_amt
         ELSE e_b_m_events_moa_information.roll_over_amt
     END AS sec_dep,
-    // to do and check - rethink logic
     CASE
         WHEN e_b_m_events_moa_information.roll_over = '' OR e_b_m_events_moa_information.roll_over IS NULL THEN 10
         ELSE 20
     END AS sec_dep_status,
-    // to do check status
+    
+    -- Updated status logic:
     CASE
-        WHEN e_b_m_events_moa_information.cancelled = 1 THEN 20
-        WHEN e_b_m_events_moa_information.approved_by > 0 THEN 50
+        WHEN e_b_m_events_moa_information.cancelled = 1 THEN 40
+        WHEN e_b_m_events_moa_information.approved_by > 0 THEN 
+            CASE
+                WHEN ROW_NUMBER() OVER (
+                    PARTITION BY e_b_m_events_moa_information.epf_id 
+                    ORDER BY e_b_m_events_moa_information.id DESC
+                ) = 1 THEN 50
+                ELSE 40
+            END
         ELSE 30
     END AS 'status'
-    //e_b_m_events_moa_information.due_date AS duedate
-    // e_b_m_events_moa_information.
+
 FROM moafile AS e_b_m_events_moa_information
 LEFT JOIN eventfile AS epf
     ON e_b_m_events_moa_information.epf_id = epf.id
