@@ -161,7 +161,7 @@ SELECT
         ELSE 20
     END AS sec_dep_status,
     
-    -- Updated status logic:
+    // Updated status logic:
     CASE
         WHEN e_b_m_events_moa_information.cancelled = 1 THEN 40
         WHEN e_b_m_events_moa_information.approved_by > 0 THEN 
