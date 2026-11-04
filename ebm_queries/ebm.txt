@@ -62,10 +62,12 @@ SELECT
         ELSE e_b_m_events_epf_information.org_id
     END AS client_id,
     e_b_m_events_epf_information.epftype_id AS event_type,
-    eventclassfile.eventclass as classification,
+    eventclassfile.eventclass AS classification,
     e_b_m_events_epf_information.event_type AS transaction_type,
+    e_b_m_events_epf_information.status_id AS event_status,
     e_b_m_events_epf_information.title,
-    e_b_m_events_epf_information.location,
+    schedule.location_id AS location,
+    e_b_m_events_epf_information.tax_id AS vat_type,
     e_b_m_events_epf_information.adv_rent,
     e_b_m_events_epf_information.sec_dep,
     e_b_m_events_epf_information.request AS requests,
@@ -80,7 +82,9 @@ FROM eventfile as e_b_m_events_epf_information
 LEFT JOIN eventclassfile
     ON e_b_m_events_epf_information.eventclass_id = eventclassfile.id
 LEFT JOIN moafile AS moa
-    ON e_b_m_events_epf_information.id = moa.epf_id;
+    ON e_b_m_events_epf_information.id = moa.epf_id
+LEFT JOIN eventschedulefile as schedule
+    ON e_b_m_events_epf_information.id = schedule.event_id;
 
 // rental cost
 SELECT
@@ -139,11 +143,13 @@ SELECT
     epf.epftype_id AS event_type,
     eventclassfile.eventclass AS classification,
     epf.event_type AS transaction_type,
+    epf.status_id AS event_status,
     epf.title,
-    epf.location,
+    schedule.location_id AS location,
     epf.request AS requests,
     epf.remarks,
     epf.recommendation AS recommendations,
+    epf.tax_id AS vat_type,
     e_b_m_events_moa_information.floor AS floor_area,
     e_b_m_events_moa_information.caterer AS caterer,
     e_b_m_events_moa_information.adv_rent_add AS adv_rent,
@@ -154,7 +160,7 @@ SELECT
     END AS sec_dep_moa_id,
     CASE
         WHEN e_b_m_events_moa_information.sec_dep_add <> 0 THEN e_b_m_events_moa_information.roll_over_amt
-        ELSE e_b_m_events_moa_information.roll_over_amt
+        ELSE epf.sec_dep
     END AS sec_dep,
     CASE
         WHEN e_b_m_events_moa_information.roll_over = '' OR e_b_m_events_moa_information.roll_over IS NULL THEN 10
@@ -179,7 +185,9 @@ FROM moafile AS e_b_m_events_moa_information
 LEFT JOIN eventfile AS epf
     ON e_b_m_events_moa_information.epf_id = epf.id
 LEFT JOIN eventclassfile
-    ON epf.eventclass_id = eventclassfile.id;
+    ON epf.eventclass_id = eventclassfile.id
+LEFT JOIN eventschedulefile as schedule
+    ON e_b_m_events_moa_information.id = schedule.event_id;
 
 // to do other services,  ingress egress
 
@@ -187,8 +195,8 @@ LEFT JOIN eventclassfile
 SELECT
     e_b_m_events_ingress_egress.id,
     CASE
-        WHEN e_b_m_events_ingress_egress.eventsched_id = 0 AND moa.epf_id <> 0 THEN moa.epf_id
-        ELSE eventsched_id
+        WHEN e_b_m_events_ingress_egress.eventsched_id = 0 THEN moa.epf_id
+        ELSE schedule.event_id
     END AS epf_id,
     e_b_m_events_ingress_egress.moa_id,
     CASE
@@ -198,10 +206,15 @@ SELECT
     e_b_m_events_ingress_egress.dte_ingress_egress AS date,
     e_b_m_events_ingress_egress.time_fr AS time_from,
     e_b_m_events_ingress_egress.time_to AS time_to,
-    '10' AS 'status'
+    CASE
+        when moa.epf_id is null AND schedule.event_id is null THEN 20
+        ELSE '10'
+    END AS 'status'
 FROM ingressandegressfile AS e_b_m_events_ingress_egress
 LEFT JOIN moafile AS moa
-    ON e_b_m_events_ingress_egress.moa_id = moa.id;
+    ON e_b_m_events_ingress_egress.moa_id = moa.id
+LEFT JOIN eventschedulefile as schedule
+    ON e_b_m_events_ingress_egress.eventsched_id = schedule.id;
 
 SELECT
     e_b_m_events_other_services.id,
@@ -218,6 +231,15 @@ SELECT
 FROM otherratefile AS e_b_m_events_other_services
 LEFT JOIN moafile AS moa
     ON e_b_m_events_other_services.moa_id = moa.id;
+
+SELECT
+    id,
+    moa_id,
+    payment AS payment_term,
+    rate AS amount_due,
+    due_date,
+    '10' AS status
+FROM paymentschedulefile AS e_b_m_payment_schedule
 
 
 
