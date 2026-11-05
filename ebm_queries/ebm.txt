@@ -51,6 +51,7 @@ SELECT
     DISTINCT(e_b_m_events_epf_information.id),
     e_b_m_events_epf_information.eventcde AS epf_id,
     e_b_m_events_epf_information.dte_received AS loi,
+    'EMAIL' AS recieved_through,
     CASE
         WHEN e_b_m_events_epf_information.branchcde = 'BR000001' THEN 2
         ELSE 1
@@ -69,7 +70,10 @@ SELECT
     e_b_m_events_epf_information.event_type AS transaction_type,
     e_b_m_events_epf_information.status_id AS event_status,
     e_b_m_events_epf_information.title,
-    schedule.location_id AS location,
+    CASE
+        WHEN e_b_m_events_epf_information.location = 0 THEN schedule.location_id
+        else e_b_m_events_epf_information.location
+    END AS location,
     e_b_m_events_epf_information.tax_id AS vat_type,
     e_b_m_events_epf_information.adv_rent,
     e_b_m_events_epf_information.sec_dep,
@@ -80,7 +84,11 @@ SELECT
         WHEN e_b_m_events_epf_information.cancelled = 1 THEN 20
         WHEN moa.id IS NOT NULL THEN 30
         ELSE 10
-    END AS 'status'
+    END AS 'status',
+    e_b_m_events_epf_information.preparedby AS signatory_created_by,
+    TRIM(SUBSTRING_INDEX(e_b_m_events_epf_information.notedby, '/', 1)) AS signatory_approved_by,
+    TRIM(SUBSTRING_INDEX(e_b_m_events_epf_information.notedby, '/', -1)) AS signatory_noted_by,
+    CONCAT(e_b_m_events_epf_information.pos_preparedby, '/', e_b_m_events_epf_information.pos_notedby) AS signatory_second_noted_by
 FROM eventfile as e_b_m_events_epf_information
 LEFT JOIN eventclassfile
     ON e_b_m_events_epf_information.eventclass_id = eventclassfile.id
@@ -89,7 +97,7 @@ LEFT JOIN moafile AS moa
 LEFT JOIN eventschedulefile as schedule
     ON e_b_m_events_epf_information.id = schedule.event_id;
 
-// rental cost
+// rental cost epf
 SELECT
     e_b_m_events_rental_costs.id,
     CASE
@@ -130,6 +138,7 @@ SELECT
     e_b_m_events_moa_information.epf_id,
     e_b_m_events_moa_information.moacde AS moa_id,
     epf.dte_received AS loi,
+    'EMAIL' AS recieved_through,
     CASE
         WHEN e_b_m_events_moa_information.branchcde = 'BR000001' THEN 2
         ELSE 1
@@ -148,7 +157,10 @@ SELECT
     epf.event_type AS transaction_type,
     epf.status_id AS event_status,
     epf.title,
-    schedule.location_id AS location,
+    CASE
+        WHEN epf.location = 0 THEN schedule.location_id
+        else epf.location
+    END AS location,
     epf.request AS requests,
     epf.remarks,
     epf.recommendation AS recommendations,
@@ -182,7 +194,11 @@ SELECT
                 ELSE 40
             END
         ELSE 30
-    END AS 'status'
+    END AS 'status',
+    e_b_m_events_moa_information.preparedby AS signatory_created_by,
+    e_b_m_events_moa_information.notedby AS signatory_noted_by,
+    e_b_m_events_moa_information.approvedby AS signatory_approved_by,
+    CONCAT(e_b_m_events_moa_information.pos_preparedby, '/', e_b_m_events_moa_information.pos_notedby, '/', e_b_m_events_moa_information.pos_approvedby) AS signatory_second_noted_by
 
 FROM moafile AS e_b_m_events_moa_information
 LEFT JOIN eventfile AS epf
@@ -191,6 +207,45 @@ LEFT JOIN eventclassfile
     ON epf.eventclass_id = eventclassfile.id
 LEFT JOIN eventschedulefile as schedule
     ON e_b_m_events_moa_information.id = schedule.event_id;
+
+// rental cost moa
+
+SELECT
+    CASE
+        WHEN e_b_m_events_rental_costs.event_id = 0 AND moa2.epf_id <> 0 THEN moa2.epf_id
+        ELSE e_b_m_events_rental_costs.event_id
+    END AS epf_id,
+    e_b_m_events_rental_costs.moa_id,
+    CASE
+        WHEN e_b_m_events_rental_costs.bill_term = 'Per Day' THEN 1
+        WHEN e_b_m_events_rental_costs.bill_term = 'Per Week' THEN 2
+        WHEN e_b_m_events_rental_costs.bill_term = 'Per Month' THEN 3
+        WHEN e_b_m_events_rental_costs.bill_term = 'Per Year' THEN 4
+        ELSE 5
+    END AS billing_type,
+    CASE
+        WHEN e_b_m_events_rental_costs.percent > 0 THEN 2
+        WHEN e_b_m_events_rental_costs.rate > 0 THEN 1
+        WHEN e_b_m_events_rental_costs.rate = 0 AND percent = 0 THEN 3
+        ELSE 3
+    END AS rental_scheme,
+    e_b_m_events_rental_costs.dte_from AS date_from,
+    e_b_m_events_rental_costs.dte_to AS date_to,
+    e_b_m_events_rental_costs.rate AS fixed_rate,
+    e_b_m_events_rental_costs.percent AS percentage,
+    e_b_m_events_rental_costs.min_rate,
+    e_b_m_events_rental_costs.remarks,
+    CASE
+		when moa.id is not null or e_b_m_events_rental_costs.moa_id <> 0 then 30
+        else 10
+	END as status
+FROM eventperiodcoveredfile AS e_b_m_events_rental_costs
+LEFT JOIN eventfile as epf
+	ON e_b_m_events_rental_costs.event_id = epf.id
+LEFT JOIN moafile AS moa
+	ON epf.id = moa.epf_id
+LEFT JOIN moafile AS moa2
+	on e_b_m_events_rental_costs.moa_id = moa2.id;
 
 // to do other services,  ingress egress
 
