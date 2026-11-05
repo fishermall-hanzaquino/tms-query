@@ -35,7 +35,10 @@ SELECT
 FROM representativefile AS e_b_m_authorized_signatories
 LEFT JOIN moafile AS moa
     ON e_b_m_authorized_signatories.moa_id = moa.id
+LEFT JOIN eventfile as epf
+	on moa.epf_id = epf.id
 where not e_b_m_authorized_signatories.lessee_rep_position = ''
+and epf.clienttype_id = 1
 and moa.org_id is not null
 group by trim(e_b_m_authorized_signatories.lessee_rep)
 order by name;
