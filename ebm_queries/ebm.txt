@@ -48,7 +48,7 @@ order by name;
 // epf
 
 SELECT
-    DISTINCT(e_b_m_events_epf_information.id),
+    e_b_m_events_epf_information.id,
     e_b_m_events_epf_information.eventcde AS epf_id,
     e_b_m_events_epf_information.dte_received AS loi,
     'EMAIL' AS recieved_through,
@@ -95,7 +95,8 @@ LEFT JOIN eventclassfile
 LEFT JOIN moafile AS moa
     ON e_b_m_events_epf_information.id = moa.epf_id
 LEFT JOIN eventschedulefile as schedule
-    ON e_b_m_events_epf_information.id = schedule.event_id;
+    ON e_b_m_events_epf_information.id = schedule.event_id
+group by e_b_m_events_epf_information.id;
 
 // moa
 SELECT
