@@ -25,23 +25,23 @@ SELECT
     '10' as status
 FROM locationfile AS e_b_m_locations;
 
-SELECT
-    e_b_m_authorized_signatories.id,
+SELECT 
+    MIN(e_b_m_authorized_signatories.id) AS id,
     e_b_m_authorized_signatories.lessee_rep AS name,
-    e_b_m_authorized_signatories.lessee_rep_position AS designation,
-    e_b_m_authorized_signatories.lessee_rep_contact AS contact_number,
+    MAX(e_b_m_authorized_signatories.lessee_rep_position) AS designation,
+    MAX(e_b_m_authorized_signatories.lessee_rep_contact) AS contact_number,
     '10' AS status,
     moa.org_id AS organizer_id
 FROM representativefile AS e_b_m_authorized_signatories
-LEFT JOIN moafile AS moa
+LEFT JOIN moafile AS moa 
     ON e_b_m_authorized_signatories.moa_id = moa.id
-LEFT JOIN eventfile as epf
-	on moa.epf_id = epf.id
-where not e_b_m_authorized_signatories.lessee_rep_position = ''
-and epf.clienttype_id = 1
-and moa.org_id is not null
-group by trim(e_b_m_authorized_signatories.lessee_rep)
-order by name;
+LEFT JOIN eventfile AS epf 
+    ON moa.epf_id = epf.id
+WHERE e_b_m_authorized_signatories.lessee_rep_position <> ''
+  AND epf.clienttype_id = 1
+  AND moa.org_id IS NOT NULL
+GROUP BY moa.org_id, TRIM(e_b_m_authorized_signatories.lessee_rep)
+ORDER BY name;
 
 // main module
 
