@@ -124,7 +124,7 @@ SELECT
     epf.status_id AS event_status,
     epf.title,
     CASE
-        WHEN epf.location = 0 THEN schedule.location_id
+        WHEN epf.location = 0 or epf.location is null THEN schedule.location_id
         else epf.location
     END AS location,
     epf.request AS requests,
@@ -172,7 +172,7 @@ LEFT JOIN eventfile AS epf
 LEFT JOIN eventclassfile
     ON epf.eventclass_id = eventclassfile.id
 LEFT JOIN eventschedulefile as schedule
-    ON e_b_m_events_moa_information.id = schedule.event_id
+    ON e_b_m_events_moa_information.epf_id = schedule.event_id
 LEFT JOIN moafile as moasecdepid
     on e_b_m_events_moa_information.roll_over = moasecdepid.moacde
 group by e_b_m_events_moa_information.id;
@@ -284,7 +284,11 @@ SELECT
         THEN moa2.epf_id
         ELSE e_b_m_events_rental_costs.event_id
     END AS epf_id,
-    e_b_m_events_rental_costs.moa_id,
+    
+	CASE
+		WHEN e_b_m_events_rental_costs.moa_id = 0 or e_b_m_events_rental_costs.moa_id is null THEN moa.id
+        ELSE e_b_m_events_rental_costs.moa_id
+    END AS moa_id,
 
     CASE
         WHEN e_b_m_events_rental_costs.bill_term = 'Per Day' THEN 1
