@@ -376,3 +376,19 @@ SELECT
     '1990-01-01 12:00:00' AS updated_at
 FROM meterreadingexcelfile AS t_m_s_meter_reading_x_electrical_hypos
 WHERE t_m_s_meter_reading_x_electrical_hypos.meterctype = "ELECTRICITY - HYPO";
+
+select
+	tf.termsofleasecde AS awardnotice_no,
+    provis.id as provision_id,
+    provis.provicde,
+    t_m_s_tenant_profile_x_provisions.provinote,
+    '10' as status,
+    1 AS updated_by,
+    '1990-01-01 12:00:00' AS created_at,
+    '1990-01-01 12:00:00' AS updated_at
+from turnoverformfile as t_m_s_tenant_profile_x_provisions
+left join turnoverfile as tf
+	on tf.turnovercde = t_m_s_tenant_profile_x_provisions.turnovercde
+left join provisionsfile as provis
+	on provis.provicde = t_m_s_tenant_profile_x_provisions.provicde
+group by t_m_s_tenant_profile_x_provisions.id;
