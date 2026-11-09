@@ -9,7 +9,7 @@ DB_CONFIG = {
     "host": "localhost",
     "user": "root",
     "password": "",
-    "database": "fishershub_tms_migration",  # ← Change to your target database
+    "database": "fishershub_tms_migration_uat4_3",  # ← Change to your target database
     "charset": "utf8mb4",
 }
 
@@ -417,7 +417,7 @@ if run_accounting:
                     up_t_m_s_service_invoice_id is not None
                     and up_t_m_s_service_invoice_id != ""
                 ):
-                    up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id) + 140698 + 18499
+                    up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id) + 146336 + 19184
 
         if chrg_description == "" or chrg_description is None or chrg_rentschemeid is None:
             continue
@@ -683,7 +683,7 @@ if run_accounting:
                     up_t_m_s_service_invoice_id is not None
                     and up_t_m_s_service_invoice_id != ""
                 ):
-                    up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id) + 140698 + 18499
+                    up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id) + 146336 + 19184
 
             if up_t_m_s_service_invoice_id != "":
                 update3.append((up_t_m_s_service_invoice_id, pyt_id))
@@ -764,7 +764,7 @@ if run_accounting:
 #                 up_t_m_s_service_invoice_id is not None
 #                 and up_t_m_s_service_invoice_id != ""
 #             ):
-#                 up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id) + 140698 + 18499
+#                 up_t_m_s_service_invoice_id = int(up_t_m_s_service_invoice_id) + 146336 + 19184
 
 #         if up_t_m_s_service_invoice_id != "":
 #             update4.append((up_t_m_s_service_invoice_id, orar_id))

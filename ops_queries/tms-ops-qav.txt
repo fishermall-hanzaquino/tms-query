@@ -258,7 +258,29 @@ SELECT
 	0 AS electricity_hypo_total,
 	'1990-01-01 12:00:00' AS created_at,
 	'1990-01-01 12:00:00' AS updated_at
-FROM meterreadingfile AS t_m_s_meter_readings;
+FROM meterreadingfile AS t_m_s_meter_readings
+WHERE meterreadingstat LIKE "%POSTED%" AND posted = 1
+GROUP BY
+    billing_period,
+    mall_id,
+    charge_type,
+    posted_by,
+    posted_at,
+    covered_from,
+    covered_to,
+    status,
+    electricity,
+    electricity_total,
+    water,
+    water_total,
+    lpg,
+    lpg_total,
+    chilled_water,
+    chilled_water_total,
+    electricity_hypo,
+    electricity_hypo_total,
+    created_at,
+    updated_at;
 
 SELECT
     t_m_s_meter_reading_x_electricals.id AS id,

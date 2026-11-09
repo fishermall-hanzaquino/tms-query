@@ -1,5 +1,5 @@
 SELECT
-    t_m_s_service_invoices.id + 140698 + 18499 AS id,
+    t_m_s_service_invoices.id + 146336 + 19184 AS id,
     t_m_s_service_invoices.sn AS service_invoice_no,
     CASE
         WHEN t_m_s_service_invoices.snt = 2 THEN "regular"
@@ -70,7 +70,7 @@ SELECT
     (t_m_s_service_invoices.chargeamt-t_m_s_service_invoices.vat) AS subtotal,
     CONCAT(
         "migrated",
-        MD5(t_m_s_service_invoices.id + 140698 + 18499)
+        MD5(t_m_s_service_invoices.id + 146336 + 19184)
     ) AS `hash`,
     t_m_s_service_invoices.pby AS prepared_by,
     t_m_s_service_invoices.cby AS checked_by,
@@ -91,7 +91,7 @@ FROM
     AND NOT t_m_s_service_invoices.tc = "";
 
 SELECT
-    t_m_s_service_invoice_charges.id + 657655 + 50981 + 317144 + 17267,
+    t_m_s_service_invoice_charges.id + 682758 + 51609 + 317402 + 17903,
     t_m_s_service_invoice_charges.sn AS t_m_s_service_invoice_id,
     "TODO" AS ewt_code,
     t_m_s_service_invoice_charges.tc AS award_notice_no,
@@ -119,7 +119,7 @@ WHERE
 UNION
 ALL
 SELECT
-    t_m_s_service_invoice_charges.id + 657655 + 50981 + 317144 + 17267 + 367893,
+    t_m_s_service_invoice_charges.id + 682758 + 51609 + 317402 + 17903 + 382527,
     t_m_s_service_invoice_charges.sn AS t_m_s_service_invoice_id,
     "TODO" AS ewt_code,
     t_m_s_service_invoice_charges.tc AS award_notice_no,
@@ -146,7 +146,7 @@ WHERE
 UNION
 ALL
 SELECT
-    t_m_s_service_invoice_charges.id + 657655 + 50981 + 317144 + 17267 + 367893 + 25129,
+    t_m_s_service_invoice_charges.id + 682758 + 51609 + 317402 + 17903 + 382527 + 25455,
     t_m_s_service_invoice_charges.sn AS t_m_s_service_invoice_id,
     "TODO" AS ewt_code,
     t_m_s_service_invoice_charges.tc AS award_notice_no,
@@ -172,11 +172,11 @@ WHERE
     AND NOT t_m_s_service_invoice_charges.amt = 0;
 
 SELECT
-    t_m_s_debit_credit_memos.id + 50981 + 317144 AS id,
+    t_m_s_debit_credit_memos.id + 51609 + 317402 AS id,
     CONCAT(
         t_m_s_debit_credit_memos.bsn,
         "-DMCM-",
-        t_m_s_debit_credit_memos.id + 50981 + 317144
+        t_m_s_debit_credit_memos.id + 51609 + 317402
     ) AS dmcm_id,
     CASE
         WHEN t_m_s_debit_credit_memos.snt = 2 THEN "regular"
@@ -205,11 +205,11 @@ WHERE
 UNION
 ALL
 SELECT
-    t_m_s_debit_credit_memos.id + 50981 + 317144 + 25129 AS id,
+    t_m_s_debit_credit_memos.id + 51609 + 317402 + 25455 AS id,
     CONCAT(
         t_m_s_debit_credit_memos.bsn,
         "-DMCM-",
-        t_m_s_debit_credit_memos.id + 50981 + 317144 + 25129
+        t_m_s_debit_credit_memos.id + 51609 + 317402 + 25455
     ) AS dmcm_id,
     CASE
         WHEN t_m_s_debit_credit_memos.snt = 2 THEN "regular"
@@ -247,7 +247,7 @@ WHERE
     AND NOT sn = 0;
 
 SELECT
-    t_m_s_service_invoice_payments.id + 31651 + 52114 AS id,
+    t_m_s_service_invoice_payments.id + 32815 + 54253 AS id,
     0 AS t_m_s_service_invoice_id,
     t_m_s_service_invoice_payments.tc AS award_notice_no,
     t_m_s_service_invoice_payments.odt AS posting_date,
@@ -276,7 +276,7 @@ WHERE
 UNION
 ALL
 SELECT
-    t_m_s_service_invoice_payments.id + 31651 + 52114 + 17093 AS id,
+    t_m_s_service_invoice_payments.id + 32815 + 54253 + 17716 AS id,
     COALESCE((SELECT 
             id
         FROM
@@ -286,10 +286,10 @@ SELECT
             AND t_m_s_service_invoice_payments.ewtdt BETWEEN single_soa1.sdt1 AND single_soa1.sdt2
                 AND (single_soa1.posted = 1
                 OR single_soa1.prnt = 1)
-        LIMIT 1),0) + 140698 + 18499 AS t_m_s_service_invoice_id,
+        LIMIT 1),0) + 146336 + 19184 AS t_m_s_service_invoice_id,
     t_m_s_service_invoice_payments.tc AS award_notice_no,
     t_m_s_service_invoice_payments.ewtdt AS posting_date,
-    CONCAT("EWT",t_m_s_service_invoice_payments.id + 31651 + 52114 + 17093) AS reference_no,
+    CONCAT("EWT",t_m_s_service_invoice_payments.id + 32815 + 54253 + 17716) AS reference_no,
     CONCAT("EWT (", t_m_s_service_invoice_payments.ewtdt1, "-", t_m_s_service_invoice_payments.ewtdt2, ")") AS payment_description,
     -COALESCE(
         t_m_s_service_invoice_payments.amt,
@@ -321,9 +321,10 @@ WHERE
 
 
 SELECT 
-    t_m_s_treasuries.id + 31651 + 52114 AS id,
-    CONCAT('TRSY-CR0-', t_m_s_treasuries.id + 31651 + 52114) AS payment_id,
+    t_m_s_treasuries.id + 32815 + 54253 AS id,
+    CONCAT('TRSY-CR0-', t_m_s_treasuries.id + 32815 + 54253) AS payment_id,
     "" AS service_invoice_id,
+    t_m_s_treasuries.tc AS awardnotice_no,
     t_m_s_treasuries.odt AS transaction_date,
     t_m_s_treasuries.odt AS receipt_date,
     '' AS payment_type,
@@ -347,7 +348,7 @@ SELECT
     '' AS location,
     t_m_s_treasuries.printby AS checked_by,
     t_m_s_treasuries.noted AS noted_by,
-    "MIGRATED" AS remarks,
+    "MIGRATED" + t_m_s_treasuries.snt AS remarks,
     30 AS `status`,
     10 AS print_status,
     1 AS mall_id,
@@ -365,7 +366,7 @@ WHERE
         AND t_m_s_treasuries.del_dt IS NULL
         AND t_m_s_treasuries.cancel_dt IS NULL 
 UNION ALL SELECT 
-    t_m_s_treasuries.id + 31651 + 52114 + 17093 AS id,
+    t_m_s_treasuries.id + 32815 + 54253 + 17716 AS id,
     CONCAT('TRSY-CR0-', t_m_s_treasuries.id) AS payment_id,
     COALESCE((SELECT 
             id
@@ -376,11 +377,12 @@ UNION ALL SELECT
             AND t_m_s_treasuries.ewtdt BETWEEN single_soa1.sdt1 AND single_soa1.sdt2
                 AND (single_soa1.posted = 1
                 OR single_soa1.prnt = 1)
-        LIMIT 1),0) + 140698 + 18499 AS service_invoice_id,
+        LIMIT 1),0) + 146336 + 19184 AS service_invoice_id,
+    "" AS awardnotice_no,
     t_m_s_treasuries.sdt2 AS transaction_date,
     t_m_s_treasuries.sdt2 AS receipt_date,
     '' AS payment_type,
-    CONCAT('EWT', t_m_s_treasuries.id + 31651) AS reference_no,
+    CONCAT('EWT', t_m_s_treasuries.id + 32815) AS reference_no,
     '' AS check_no,
     '' AS check_date,
     '' AS check_bank,
@@ -415,7 +417,7 @@ UNION ALL SELECT
         LIMIT 1) AS location,
     t_m_s_treasuries.user AS checked_by,
     'ANGIE DELOS SANTOS' AS noted_by,
-    'MIGRATED EWT' AS remarks,
+    'MIGRATED EWT'  + t_m_s_treasuries.snt AS remarks,
     30 AS `status`,
     10 AS print_status,
     1 AS mall_id,

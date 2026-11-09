@@ -88,7 +88,7 @@ FROM
     AND NOT t_m_s_service_invoices.tc = ""
 UNION ALL
 SELECT
-    t_m_s_service_invoices.id + 140698 as id,
+    t_m_s_service_invoices.id + 146336 as id,
     t_m_s_service_invoices.soano AS service_invoice_no,
     "regular" AS `type`,
     t_m_s_service_invoices.tol_moa_id AS award_notice_no,
@@ -156,7 +156,7 @@ WHERE
 UNION
 ALL
 SELECT
-    t_m_s_service_invoice_charges.id + 657655,
+    t_m_s_service_invoice_charges.id + 682758,
     t_m_s_service_invoice_charges.sn AS t_m_s_service_invoice_id,
     "TODO" AS ewt_code,
     t_m_s_service_invoice_charges.tc AS award_notice_no,
@@ -183,7 +183,7 @@ WHERE
 UNION
 ALL
 SELECT
-    t_m_s_service_invoice_charges.id + 657655 + 50981,
+    t_m_s_service_invoice_charges.id + 682758 + 51609,
     t_m_s_service_invoice_charges.sn AS t_m_s_service_invoice_id,
     "TODO" AS ewt_code,
     t_m_s_service_invoice_charges.tc AS award_notice_no,
@@ -210,8 +210,8 @@ WHERE
 UNION
 ALL
 SELECT
-    t_m_s_service_invoice_charges.id + 657655 + 50981 + 317144,
-    t_m_s_service_invoice_charges.soaid + 140698 AS t_m_s_service_invoice_id,
+    t_m_s_service_invoice_charges.id + 682758 + 51609 + 317402,
+    t_m_s_service_invoice_charges.soaid + 146336 AS t_m_s_service_invoice_id,
     "TODO" AS ewt_code,
     "" AS award_notice_no,
     '1990-01-01 12:00:00' AS posting_date,
@@ -267,11 +267,11 @@ WHERE
 UNION
 ALL
 SELECT
-    t_m_s_debit_credit_memos.id + 50981 AS id,
+    t_m_s_debit_credit_memos.id + 51609 AS id,
     CONCAT(
         t_m_s_debit_credit_memos.bsn,
         "-DMCM-",
-        t_m_s_debit_credit_memos.id + 50981
+        t_m_s_debit_credit_memos.id + 51609
     ) AS dmcm_id,
     CASE
         WHEN t_m_s_debit_credit_memos.snt = 2 THEN "regular"
@@ -309,7 +309,7 @@ WHERE
     AND NOT sn = 0
 UNION ALL
 SELECT
-    id + 140698 AS id,
+    id + 146336 AS id,
     soano
 FROM
     soafile AS sn_map_qav
@@ -347,7 +347,7 @@ WHERE
 UNION
 ALL
 SELECT
-    t_m_s_service_invoice_payments.id + 31651 AS id,
+    t_m_s_service_invoice_payments.id + 32815 AS id,
     COALESCE((SELECT 
             id
         FROM
@@ -360,7 +360,7 @@ SELECT
         LIMIT 1),0) AS t_m_s_service_invoice_id,
     t_m_s_service_invoice_payments.tc AS award_notice_no,
     t_m_s_service_invoice_payments.ewtdt AS posting_date,
-    CONCAT("EWT",t_m_s_service_invoice_payments.id + 31651) AS reference_no,
+    CONCAT("EWT",t_m_s_service_invoice_payments.id + 32815) AS reference_no,
     CONCAT("EWT (", t_m_s_service_invoice_payments.ewtdt1, "-", t_m_s_service_invoice_payments.ewtdt2, ")") AS payment_description,
     -COALESCE(
         t_m_s_service_invoice_payments.amt,
@@ -393,6 +393,7 @@ SELECT
     t_m_s_treasuries.id AS id,
     CONCAT('TRSY-CR0-', t_m_s_treasuries.id) AS payment_id,
     "" AS service_invoice_id,
+    t_m_s_treasuries.tc AS awardnotice_no,
     t_m_s_treasuries.odt AS transaction_date,
     t_m_s_treasuries.odt AS receipt_date,
     '' AS payment_type,
@@ -416,7 +417,7 @@ SELECT
     '' AS location,
     t_m_s_treasuries.printby AS checked_by,
     t_m_s_treasuries.noted AS noted_by,
-    "MIGRATED" AS remarks,
+    "MIGRATED"  + t_m_s_treasuries.snt AS remarks,
     30 AS `status`,
     10 AS print_status,
     2 AS mall_id,
@@ -434,7 +435,7 @@ WHERE
         AND t_m_s_treasuries.del_dt IS NULL
         AND t_m_s_treasuries.cancel_dt IS NULL 
 UNION ALL SELECT 
-    t_m_s_treasuries.id + 31651 AS id,
+    t_m_s_treasuries.id + 32815 AS id,
     CONCAT('TRSY-CR0-', t_m_s_treasuries.id) AS payment_id,
     COALESCE((SELECT 
             id
@@ -446,10 +447,11 @@ UNION ALL SELECT
                 AND (single_soa1.posted = 1
                 OR single_soa1.prnt = 1)
         LIMIT 1),0) AS service_invoice_id,
+    "" AS awardnotice_no,
     t_m_s_treasuries.sdt2 AS transaction_date,
     t_m_s_treasuries.sdt2 AS receipt_date,
     '' AS payment_type,
-    CONCAT('SEWT', t_m_s_treasuries.id + 31651) AS reference_no,
+    CONCAT('SEWT', t_m_s_treasuries.id + 32815) AS reference_no,
     '' AS check_no,
     '' AS check_date,
     '' AS check_bank,
@@ -484,7 +486,7 @@ UNION ALL SELECT
         LIMIT 1) AS location,
     t_m_s_treasuries.user AS checked_by,
     'ANGIE DELOS SANTOS' AS noted_by,
-    'MIGRATED EWT' AS remarks,
+    'MIGRATED EWT'  + t_m_s_treasuries.snt AS remarks,
     30 AS `status`,
     10 AS print_status,
     2 AS mall_id,
