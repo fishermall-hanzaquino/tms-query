@@ -231,105 +231,105 @@ FROM paymentschedulefile AS e_b_m_payment_schedule;
 
 // combined rental cost epf moa
 
-SELECT
-    CASE
-        WHEN e_b_m_events_rental_costs.event_id = 0
-             AND moa.epf_id <> 0
-        THEN moa.epf_id
-        ELSE e_b_m_events_rental_costs.event_id
-    END AS epf_id,
-    e_b_m_events_rental_costs.moa_id,
+SELECT * 
+FROM (
+	SELECT
+        CASE
+            WHEN e_b_m_events_rental_costs.event_id = 0
+                AND moa.epf_id <> 0
+            THEN moa.epf_id
+            ELSE e_b_m_events_rental_costs.event_id
+        END AS epf_id,
+        e_b_m_events_rental_costs.moa_id,
 
-    CASE
-        WHEN e_b_m_events_rental_costs.bill_term = 'Per Day' THEN 1
-        WHEN e_b_m_events_rental_costs.bill_term = 'Per Week' THEN 2
-        WHEN e_b_m_events_rental_costs.bill_term = 'Per Month' THEN 3
-        WHEN e_b_m_events_rental_costs.bill_term = 'Per Year' THEN 4
-        ELSE 5
-    END AS billing_type,
+        CASE
+            WHEN e_b_m_events_rental_costs.bill_term = 'Per Day' THEN 1
+            WHEN e_b_m_events_rental_costs.bill_term = 'Per Week' THEN 2
+            WHEN e_b_m_events_rental_costs.bill_term = 'Per Month' THEN 3
+            WHEN e_b_m_events_rental_costs.bill_term = 'Per Year' THEN 4
+            ELSE 5
+        END AS billing_type,
 
-    CASE
-        WHEN e_b_m_events_rental_costs.percent > 0 THEN 2
-        WHEN e_b_m_events_rental_costs.rate > 0 THEN 1
-        WHEN e_b_m_events_rental_costs.rate = 0
-             AND e_b_m_events_rental_costs.percent = 0 THEN 3
-        ELSE 3
-    END AS rental_scheme,
+        CASE
+            WHEN e_b_m_events_rental_costs.percent > 0 THEN 2
+            WHEN e_b_m_events_rental_costs.rate > 0 THEN 1
+            WHEN e_b_m_events_rental_costs.rate = 0
+                AND e_b_m_events_rental_costs.percent = 0 THEN 3
+            ELSE 3
+        END AS rental_scheme,
 
-    e_b_m_events_rental_costs.dte_from AS date_from,
-    e_b_m_events_rental_costs.dte_to AS date_to,
-    e_b_m_events_rental_costs.rate AS fixed_rate,
-    e_b_m_events_rental_costs.percent AS percentage,
-    e_b_m_events_rental_costs.min_rate,
-    e_b_m_events_rental_costs.remarks,
+        e_b_m_events_rental_costs.dte_from AS date_from,
+        e_b_m_events_rental_costs.dte_to AS date_to,
+        e_b_m_events_rental_costs.rate AS fixed_rate,
+        e_b_m_events_rental_costs.percent AS percentage,
+        e_b_m_events_rental_costs.min_rate,
+        e_b_m_events_rental_costs.remarks,
 
-    CASE
-        WHEN e_b_m_events_rental_costs.moa_id = 0 THEN 10
-        ELSE 30
-    END AS status
+        CASE
+            WHEN e_b_m_events_rental_costs.moa_id = 0 THEN 10
+            ELSE 30
+        END AS status
 
-FROM eventperiodcoveredfile AS e_b_m_events_rental_costs
+    FROM eventperiodcoveredfile AS e_b_m_events_rental_costs
 
-LEFT JOIN moafile AS moa
-    ON e_b_m_events_rental_costs.moa_id = moa.id
+    LEFT JOIN moafile AS moa
+        ON e_b_m_events_rental_costs.moa_id = moa.id
 
+    UNION ALL
 
-UNION ALL
+    SELECT
+        e_b_m_events_rental_costs.event_id AS epf_id,
 
+        CASE
+            WHEN e_b_m_events_rental_costs.moa_id = 0
+                OR e_b_m_events_rental_costs.moa_id IS NULL
+            THEN moa.id
+            ELSE e_b_m_events_rental_costs.moa_id
+        END AS moa_id,
 
-SELECT
-    CASE
-        WHEN e_b_m_events_rental_costs.event_id = 0
-             AND moa2.epf_id <> 0
-        THEN moa2.epf_id
-        ELSE e_b_m_events_rental_costs.event_id
-    END AS epf_id,
-    
-	CASE
-		WHEN e_b_m_events_rental_costs.moa_id = 0 or e_b_m_events_rental_costs.moa_id is null THEN moa.id
-        ELSE e_b_m_events_rental_costs.moa_id
-    END AS moa_id,
+        CASE
+            WHEN e_b_m_events_rental_costs.bill_term = 'Per Day' THEN 1
+            WHEN e_b_m_events_rental_costs.bill_term = 'Per Week' THEN 2
+            WHEN e_b_m_events_rental_costs.bill_term = 'Per Month' THEN 3
+            WHEN e_b_m_events_rental_costs.bill_term = 'Per Year' THEN 4
+            ELSE 5
+        END AS billing_type,
 
-    CASE
-        WHEN e_b_m_events_rental_costs.bill_term = 'Per Day' THEN 1
-        WHEN e_b_m_events_rental_costs.bill_term = 'Per Week' THEN 2
-        WHEN e_b_m_events_rental_costs.bill_term = 'Per Month' THEN 3
-        WHEN e_b_m_events_rental_costs.bill_term = 'Per Year' THEN 4
-        ELSE 5
-    END AS billing_type,
+        CASE
+            WHEN e_b_m_events_rental_costs.percent > 0 THEN 2
+            WHEN e_b_m_events_rental_costs.rate > 0 THEN 1
+            WHEN e_b_m_events_rental_costs.rate = 0
+                AND e_b_m_events_rental_costs.percent = 0 THEN 3
+            ELSE 3
+        END AS rental_scheme,
 
-    CASE
-        WHEN e_b_m_events_rental_costs.percent > 0 THEN 2
-        WHEN e_b_m_events_rental_costs.rate > 0 THEN 1
-        WHEN e_b_m_events_rental_costs.rate = 0
-             AND e_b_m_events_rental_costs.percent = 0 THEN 3
-        ELSE 3
-    END AS rental_scheme,
+        e_b_m_events_rental_costs.dte_from AS date_from,
+        e_b_m_events_rental_costs.dte_to AS date_to,
+        e_b_m_events_rental_costs.rate AS fixed_rate,
+        e_b_m_events_rental_costs.percent AS percentage,
+        e_b_m_events_rental_costs.min_rate,
+        e_b_m_events_rental_costs.remarks,
 
-    e_b_m_events_rental_costs.dte_from AS date_from,
-    e_b_m_events_rental_costs.dte_to AS date_to,
-    e_b_m_events_rental_costs.rate AS fixed_rate,
-    e_b_m_events_rental_costs.percent AS percentage,
-    e_b_m_events_rental_costs.min_rate,
-    e_b_m_events_rental_costs.remarks,
+        CASE
+            WHEN moa.id IS NOT NULL
+                OR e_b_m_events_rental_costs.moa_id <> 0
+            THEN 30
+            ELSE 10
+        END AS status
 
-    CASE
-        WHEN moa.id IS NOT NULL
-             OR e_b_m_events_rental_costs.moa_id <> 0
-        THEN 30
-        ELSE 10
-    END AS status
+    FROM eventperiodcoveredfile AS e_b_m_events_rental_costs
 
-FROM eventperiodcoveredfile AS e_b_m_events_rental_costs
+    LEFT JOIN moafile AS moa
+        ON e_b_m_events_rental_costs.event_id = moa.epf_id
+        AND moa.id = (
+            SELECT MIN(moa2.id)
+            FROM moafile AS moa2
+            WHERE moa2.epf_id = e_b_m_events_rental_costs.event_id
+        )
 
-LEFT JOIN eventfile AS epf
-    ON e_b_m_events_rental_costs.event_id = epf.id
-
-LEFT JOIN moafile AS moa
-    ON epf.id = moa.epf_id
-
-LEFT JOIN moafile AS moa2
-    ON e_b_m_events_rental_costs.moa_id = moa2.id;
+    WHERE e_b_m_events_rental_costs.event_id <> 0
+        and moa.id is not null
+) as e_b_m_events_rental_costs
 
 
 
