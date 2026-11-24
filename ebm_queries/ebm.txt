@@ -219,8 +219,9 @@ SELECT
     e_b_m_events_ingress_egress.time_fr AS time_from,
     e_b_m_events_ingress_egress.time_to AS time_to,
     CASE
-        when moa.epf_id is null AND schedule.event_id is null THEN 20
-        ELSE '10'
+        when e_b_m_events_ingress_egress.moa_id <> 0 THEN 30
+        when moa.epf_id is null AND schedule.event_id is not null THEN 10
+        ELSE '20'
     END AS 'status'
 FROM ingressandegressfile AS e_b_m_events_ingress_egress
 LEFT JOIN moafile AS moa
