@@ -173,25 +173,30 @@ SELECT
     ) AS tin,
     t_m_s_award_notices.foperiodfrdte AS fitoutfrom,
     t_m_s_award_notices.foperiodtodte AS fitoutto,
-    (
-        SELECT
-            tenantaccountfile.tenantaccttin
-        FROM
-            tenantaccountfile
-        WHERE
-            tenantaccountfile.clientacctcde = t_m_s_award_notices.clientacctcde
-        LIMIT
-            1
-    ) AS headofficetin,
-    (
-        SELECT
-            tenantaccountfile.tenantacctaddr
-        FROM
-            tenantaccountfile
-        WHERE
-            tenantaccountfile.clientacctcde = t_m_s_award_notices.clientacctcde
-        LIMIT
-            1
+    COALESCE(
+        (
+            SELECT
+                tenantaccountfile.tenantaccttin
+            FROM
+                tenantaccountfile
+            WHERE
+                tenantaccountfile.clientacctcde = t_m_s_award_notices.clientacctcde
+            LIMIT
+                1
+        ), t_m_s_award_notices.tin
+    )
+     AS headofficetin,
+    COALESCE(
+        (
+            SELECT
+                tenantaccountfile.tenantacctaddr
+            FROM
+                tenantaccountfile
+            WHERE
+                tenantaccountfile.clientacctcde = t_m_s_award_notices.clientacctcde
+            LIMIT
+                1
+        ), t_m_s_award_notices.address
     ) AS headofficeaddress,
     10 AS STATUS,
     CASE

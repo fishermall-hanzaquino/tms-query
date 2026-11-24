@@ -62,11 +62,23 @@ SELECT
         ELSE 1
     END AS client_type,
     CASE
-        WHEN e_b_m_events_epf_information.clientoffer_id IS NOT NULL THEN e_b_m_events_epf_information.clientoffer_id
+        WHEN e_b_m_events_epf_information.clienttype_id = 2 THEN (
+			SELECT an.id
+            FROM db_tms.clientofferfile as an
+            LEFT JOIN
+				db_tms.tenantaccountfile as client
+			ON
+				client.clientacctcde = an.clientacctcde
+			WHERE client.id = e_b_m_events_epf_information.org_id
+            LIMIT 1
+        )
         ELSE e_b_m_events_epf_information.org_id
     END AS client_id,
     e_b_m_events_epf_information.epftype_id AS event_type,
-    eventclassfile.eventclass AS classification,
+    CASE
+		WHEN eventclassfile.eventclass IS NOT NULL THEN eventclassfile.eventclass
+        ELSE 'Migrated Data. No Input'
+    END AS classification,
     e_b_m_events_epf_information.event_type AS transaction_type,
     e_b_m_events_epf_information.status_id AS event_status,
     e_b_m_events_epf_information.title,
@@ -115,11 +127,23 @@ SELECT
         ELSE 1
     END AS client_type,
     CASE
-        WHEN epf.clientoffer_id IS NOT NULL THEN epf.clientoffer_id
+        WHEN epf.clienttype_id = 2 THEN (
+			SELECT an.id
+            FROM db_tms.clientofferfile as an
+            LEFT JOIN
+				db_tms.tenantaccountfile as client
+			ON
+				client.clientacctcde = an.clientacctcde
+			WHERE client.id = epf.org_id
+            LIMIT 1
+        )
         ELSE epf.org_id
     END AS client_id,
     epf.epftype_id AS event_type,
-    eventclassfile.eventclass AS classification,
+    CASE
+		WHEN eventclassfile.eventclass IS NOT NULL THEN eventclassfile.eventclass
+        ELSE 'Migrated Data. No Input'
+    END AS classification,
     epf.event_type AS transaction_type,
     epf.status_id AS event_status,
     epf.title,
@@ -205,7 +229,6 @@ LEFT JOIN eventschedulefile as schedule
     ON e_b_m_events_ingress_egress.eventsched_id = schedule.id;
 
 SELECT
-    e_b_m_events_other_services.id,
     CASE
         WHEN e_b_m_events_other_services.event_id = 0 AND moa.epf_id <> 0 THEN moa.epf_id
         ELSE event_id
@@ -214,11 +237,37 @@ SELECT
     e_b_m_events_other_services.chargescde AS service_id,
     e_b_m_events_other_services.rate AS rate,
     e_b_m_events_other_services.qty,
-    e_b_m_events_other_services.remarks,
-    '10' AS 'status'
+    concat("MIGRATED DATA - ", e_b_m_events_other_services.remarks) AS remarks,
+	CASE
+		WHEN e_b_m_events_other_services.moa_id = 0 THEN 10
+        ELSE 30
+	END AS status
 FROM otherratefile AS e_b_m_events_other_services
 LEFT JOIN moafile AS moa
-    ON e_b_m_events_other_services.moa_id = moa.id;
+    ON e_b_m_events_other_services.moa_id = moa.id
+
+UNION ALL
+
+SELECT *
+FROM (
+    SELECT
+        x.event_id AS epf_id,
+        (
+            SELECT moa.id
+            FROM moafile AS moa
+            WHERE epf_id = x.event_id
+            ORDER BY id ASC
+            LIMIT 1
+        ) AS moa_id,
+        x.chargescde AS service_id,
+        x.rate AS rate,
+        x.qty,
+        CONCAT("MIGRATED DATA - ", x.remarks) AS remarks,
+        '30' AS status
+    FROM otherratefile AS x
+    WHERE x.moa_id = 0
+) AS e_b_m_events_other_services
+WHERE e_b_m_events_other_services.moa_id IS NOT NULL;
 
 SELECT
     id,
