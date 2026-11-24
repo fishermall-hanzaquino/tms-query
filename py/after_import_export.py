@@ -9,7 +9,7 @@ DB_CONFIG = {
     "host": "localhost",
     "user": "root",
     "password": "",
-    "database": "fishershub_tms_migration_uat4_3",  # ← Change to your target database
+    "database": "fishershub_tms_migration_uat4",  # ← Change to your target database
     "charset": "utf8mb4",
 }
 
